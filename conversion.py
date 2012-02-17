@@ -1,0 +1,248 @@
+from ctypes import *
+from reparted import *
+
+# No enum data type in ctypes, just assign values.
+# PedDiskFlag
+PED_DISK_CYLINDER_ALIGNMENT = 1
+
+# PedPartitionFlag
+PED_PARTITION_BOOT = 1
+PED_PARTITION_ROOT = 2
+PED_PARTITION_SWAP = 3
+PED_PARTITION_HIDDEN = 4
+PED_PARTITION_RAID = 5
+PED_PARTITION_LVM = 6
+PED_PARTITION_LBA = 7
+PED_PARTITION_HPSERVICE = 8
+PED_PARTITION_PALO = 9
+PED_PARTITION_PREP = 10
+PED_PARTITION_MSFT_RESERVED = 11
+PED_PARTITION_BIOS_GRUB = 12
+PED_PARTITION_APPLE_TV_RECOVERY = 13
+PED_PARTITION_DIAG = 14
+PED_PARTITION_LEGACY_BOOT = 15
+
+# PedDiskTypeFeature
+PED_DISK_TYPE_EXTENDED = 1
+PED_DISK_TYPE_PARTITION_NAME = 2
+
+class PedCHSGeometry(Structure):
+    _fields_ = [
+        ('cylinders', c_int),
+        ('heads', c_int),
+        ('sectors', c_int),
+    ]
+
+PedSector = c_longlong
+
+class PedAlignment(Structure):
+    _fields_ = [
+        ('offset', PedSector),
+        ('grain_size', PedSector),
+     ]
+
+class PedDevice(Structure):
+    pass
+
+PedDevice._fields_ = [
+    ('next', POINTER(PedDevice)),
+    ('model', c_char_p),
+    ('path', c_char_p),
+    ('type', c_int),
+    ('sector_size', c_longlong),
+    ('phys_sector_size', c_longlong),
+    ('length', PedSector),
+    ('open_count', c_int),
+    ('read_only', c_int),
+    ('external_mode', c_int),
+    ('dirty', c_int),
+    ('boot_dirty', c_int),
+    ('hw_geom', PedCHSGeometry),
+    ('bios_geom', PedCHSGeometry),
+    ('host', c_short),
+    ('did', c_short),
+    ('arch_specific', c_void_p),
+]
+
+# Geometry stuff starts here
+class PedGeometry(Structure):
+    _fields_ = [
+        ('dev', POINTER(PedDevice)),
+        ('start', PedSector),
+        ('length', PedSector),
+        ('end', PedSector),
+     ]
+# Geometry stuff ends here
+
+class PedPartition(Structure):
+    pass
+
+class PedDiskType(Structure):
+    pass
+
+class PedFileSystemType(Structure):
+    pass
+
+class PedDisk(Structure):
+    _fields_ = [
+        ('dev', POINTER(PedDevice)),
+        ('type', POINTER(PedDiskType)),
+        ('block_sizes', c_int),
+        ('part_list', POINTER(PedPartition)),
+        ('disk_specific', c_void_p),
+        ('needs_clobber', c_int),
+        ('update_mode', c_int),
+     ]
+    #def __init__(self):
+        #name = self.type.contents.name
+        #ops = self.type.contents.ops
+        #ops.contents.alloc_metadata = c_char_p(name + '_alloc_metadata')
+
+class PedDiskOps(Structure):
+    _fields_ = [
+        ('probe', c_int),
+        ('clobber', c_int),
+        ('alloc', POINTER(PedDisk)),
+        ('duplicate', POINTER(PedDisk)),
+        ('free', c_void_p),
+        ('read', c_int),
+        ('write', c_int),
+        ('disk_set_flag', c_int),
+        ('disk_get_flag', c_int),
+        ('disk_is_flag_available', c_int),
+        ('partition_new', POINTER(PedPartition)),
+        ('partition_duplicate', POINTER(PedPartition)),
+        ('partition_destroy', c_void_p),
+        ('partition_set_system', c_int),
+        ('partition_set_flag', c_int),
+        ('partition_get_flag', c_int),
+        ('partition_is_flag_available', c_int),
+        ('partition_set_name', c_void_p),
+        ('partition_get_name', c_char_p),
+        ('partition_align', c_int),
+        ('partition_enumerate', c_int),
+        ('partition_check', c_bool),
+        ('alloc_metadata', c_int),
+        ('get_max_primary_partition_count', c_int),
+        ('get_max_supported_partition_count', c_bool),
+        ('get_partition_alignment', POINTER(PedAlignment)),
+        ('max_length', PedSector),
+        ('max_start_sector', PedSector)
+    ]
+
+PedDiskType._fields_ = [
+    ('next', POINTER(PedDiskType)),
+    ('name', c_char_p),
+    ('ops', POINTER(PedDiskOps)),
+    ('features', c_int)
+]
+
+PedFileSystemType._fields_ = [
+    ('next', POINTER(PedFileSystemType)),
+    ('name', c_char_p),
+    ('block_sizes', c_int),
+    ('ops', POINTER(PedDiskOps)),
+]
+
+PedPartition._fields_ = [
+    ('prev', POINTER(PedPartition)),
+    ('next', POINTER(PedPartition)),
+    ('disk', POINTER(PedDisk)),
+    ('geom', PedGeometry),
+    ('num', c_int),
+    ('type', c_long),
+    ('fs_type', POINTER(PedFileSystemType)),
+    ('part_list', POINTER(PedPartition)),
+    ('disk_specific', c_void_p),
+]
+
+# Start of Alignment/Constraint stuff
+
+class PedConstraint(Structure):
+    _fields_ = [
+        ('start_align', POINTER(PedAlignment)),
+        ('end_align', POINTER(PedAlignment)),
+        ('start_range', POINTER(PedGeometry)),
+        ('end_range', POINTER(PedGeometry)),
+        ('min_size', PedSector),
+        ('max_size', PedSector),
+     ]
+# End of Alignment/Constraint stuff
+
+# Devices
+device_get = parted.ped_device_get
+device_get.restype = POINTER(PedDevice)
+device_get_constraint = parted.ped_device_get_constraint
+device_get_constraint.restype = POINTER(PedConstraint)
+devices = POINTER(PedDevice)
+
+# Disks
+disk_probe = parted.ped_disk_probe
+disk_probe.restype = POINTER(PedDiskType)
+disk_new = parted.ped_disk_new
+disk_new.restype = POINTER(PedDisk)
+disk_new_fresh = parted.ped_disk_new_fresh
+disk_new_fresh.argtypes = [POINTER(PedDevice), POINTER(PedDiskType)]
+disk_new_fresh.restype = POINTER(PedDisk)
+disk_add_partition = parted.ped_disk_add_partition
+disk_add_partition.argtypes = [POINTER(PedDisk), POINTER(PedPartition), POINTER(PedConstraint)]
+disk_next_partition = parted.ped_disk_next_partition
+disk_next_partition.argtypes = [POINTER(PedDisk), POINTER(PedPartition)]
+disk_next_partition.restype = POINTER(PedPartition)
+disk_get_last_partition_num = parted.ped_disk_get_last_partition_num
+disk_get_last_partition_num.argtypes = [POINTER(PedDisk)]
+disk_get_partition = parted.ped_disk_get_partition
+disk_get_partition.argtypes = [POINTER(PedDisk), c_int]
+disk_get_partition.restype = POINTER(PedPartition)
+disk_delete_partition = parted.ped_disk_delete_partition
+disk_delete_partition.argtypes = [POINTER(PedDisk), POINTER(PedPartition)]
+disk_delete_all = parted.ped_disk_delete_all
+disk_delete_all.argtypes = [POINTER(PedDisk)]
+# I would rather call commit_to_dev and commit_to_os manually
+#parted.ped_disk_commit.argtypes = [POINTER(PedDisk)]
+disk_commit_to_os = parted.ped_disk_commit_to_os
+disk_commit_to_os.argtypes = [POINTER(PedDisk)]
+disk_commit_to_dev = parted.ped_disk_commit_to_dev
+disk_commit_to_dev.argtypes = [POINTER(PedDisk)]
+disk_destroy = parted.ped_disk_destroy
+disk_destroy.argtypes = [POINTER(PedDisk)]
+disk_destroy.restype = None
+disk_print = parted.ped_disk_print
+disk_print.argtypes = [POINTER(PedDisk)]
+partition_new = parted.ped_partition_new
+partition_new.argtypes = [POINTER(PedDisk), c_int, POINTER(PedFileSystemType), PedSector, PedSector]
+partition_new.restype = POINTER(PedPartition)
+partition_is_busy = parted.ped_partition_is_busy
+partition_is_busy.argtypes = [POINTER(PedPartition)]
+get_type = parted.ped_disk_type_get
+get_type.restype = POINTER(PedDiskType)
+constraint_new = parted.ped_constraint_new
+constraint_new.argtypes = [POINTER(PedAlignment), POINTER(PedAlignment), POINTER(PedGeometry), POINTER(PedGeometry), PedSector, PedSector]
+constraint_new.restype = POINTER(PedConstraint)
+geometry_new = parted.ped_geometry_new
+geometry_new.argtypes = [POINTER(PedDevice), PedSector, PedSector]
+geometry_new.restype = POINTER(PedGeometry)
+device_get_optimal_aligned_constraint = parted.ped_device_get_optimal_aligned_constraint
+device_get_optimal_aligned_constraint.argtypes = [POINTER(PedDevice)]
+device_get_optimal_aligned_constraint.restype = POINTER(PedConstraint)
+device_get_minimal_aligned_constraint = parted.ped_device_get_minimal_aligned_constraint
+device_get_minimal_aligned_constraint.argtypes = [POINTER(PedDevice)]
+device_get_minimal_aligned_constraint.restype = POINTER(PedConstraint)
+device_get__constraint = parted.ped_device_get_constraint
+device_get_constraint.argtypes = [POINTER(PedDevice)]
+device_get_constraint.restype = POINTER(PedConstraint)
+constraint_intersect = parted.ped_constraint_intersect
+constraint_intersect.argtypes = [POINTER(PedConstraint), POINTER(PedConstraint)]
+constraint_intersect.restype = POINTER(PedConstraint)
+constraint_destroy = parted.ped_constraint_destroy
+constraint_destroy.argtypes = [POINTER(PedConstraint)]
+disk_remove_partition = parted.ped_disk_remove_partition
+disk_remove_partition.argtypes = [POINTER(PedDisk), POINTER(PedPartition)]
+partition_get_name = parted.ped_partition_get_name
+partition_get_name.argtypes = [POINTER(PedPartition)]
+partition_get_name.restype = c_char_p
+partition_set_name = parted.ped_partition_set_name
+partition_set_name.argtypes = [POINTER(PedPartition), c_char_p]
+file_system_type_get = parted.ped_file_system_type_get
+file_system_type_get.argtypes = [c_char_p]
+file_system_type_get.restype = POINTER(PedFileSystemType)
