@@ -1,0 +1,60 @@
+Ok, here is a quickie introduction -if u know what I mean-, so this is how it goes for now,
+you can set a device and add partitions to it using the following code:
+
+############################
+
+from reparted.device import *
+
+dev = Device("/dev/sdb") # or whatever your preferred dev is.
+disk = dev.disk()
+sz = Size(200, "MB")
+new = Partition(disk, sz) # this defaults the filesystem to ext3 and partition type "NORMAL"
+#new = Partition(disk, sz, fs="ext4") # set the filesystem blocks to ext4
+#new = Partition(disk, sz, fs="ext4", name="hire_ruben") # set a name
+disk.add_partition(new)
+disk.commit()
+
+############################
+
+Now you can access partition properties and methods from the partition instance "new":
+
+disk            -Returns an instance of Disk
+geom            -Returns a 3-tuple (start_sector, end_sector, length_in_sectors)
+num             -Returns the partition number
+type            -Returns the partition type (EXTENDED, NORMAL, LOGICAL, etc...)
+fs_type         -Returns the filesystem block geometry type (ext3, ext4, etc...)
+name            -The partition name if set
+set_name        -If the partition table supports names you can change it with this method,
+                    you will need to commit the changes to disk though
+
+############################
+
+Disk Stuff
+
+You can create an instance of a disk by providing a device or accessing the disk method from
+the Device class:
+
+    dev = Device("/dev/sdb") # or whatever your preferred dev is.
+    disk = dev.disk()
+
+    OR
+
+    dev = Device("/dev/sdb") # or whatever your preferred dev is.
+    disk = Disk(dev)
+
+These are the properties and methods for disk instances:
+
+type_name       -Returns the disk partition table name (gpt, dvh, etc...)
+type_features   -Returns either PARTITION_NAME (supports naming partitions)
+                    or EXTENDED (lvm stuff, no naming partitions for you!)
+block_sizes     -the disk block sizes.
+needs_clobber   -True or False.
+update_mode     -True or False
+partitions      -Returns a list of partitions in disk (as Partition instances).
+                    METADATA, FREESPACE and PROTECTED partitions are not included.
+add_partition   -Takes a Partition instance and adds it to the disk partition table.
+                    NOTE: You must call commit to save your changes to disk.
+delete_partition       -Takes either a Partition instance or partition number and deletes it.
+delete_all      -Deletes all partitions
+commit          -Commits changes to disk.
+

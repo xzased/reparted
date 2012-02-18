@@ -2,6 +2,11 @@ from conversion import *
 #from partition import *
 import os
 
+disk_features = {
+    1 : 'EXTENDED',
+    2 : 'PARTITION_NAME'
+}
+
 alignment_any = PedAlignment(0, 1)
 
 class DiskError(Exception):
@@ -19,8 +24,13 @@ class Disk(object):
             raise Exception("Dude WTF?")
 
     @property
-    def type(self):
+    def type_name(self):
         return self.__disk.contents.type.contents.name
+
+    @property
+    def type_features(self):
+        feat = self.__disk.contents.type.contents.features
+        return disk_features[feat]
 
     @property
     def block_sizes(self):
@@ -53,7 +63,7 @@ class Disk(object):
     def add_partition(self, part, alignment=None):
         try:
             p = self.get_partition(part.num)
-            if p.geom.start == part.geom.start and p.geom.length == part.geom.length:
+            if p.geom == part.geom:
                 raise DiskError
         except DiskError:
             raise ValueError("This partition already exists in the disk... And yeah, my english sucks.")
@@ -61,9 +71,10 @@ class Disk(object):
             pass
         partition = part._Partition__partition
         disk = self.__disk
-        range_start = geometry_new(self.__device, partition.contents.geom.start, 1)
-        range_end = geometry_new(self.__device, partition.contents.geom.end, 1)
-        user_constraint = constraint_new(alignment_any, alignment_any, range_start, range_end, 1, part.geom.length)
+        start, end, length = part.geom
+        range_start = geometry_new(self.__device, start, 1)
+        range_end = geometry_new(self.__device, end, 1)
+        user_constraint = constraint_new(alignment_any, alignment_any, range_start, range_end, 1, length)
         if not bool(user_constraint):
             raise Exception("Could not set user defined constraint.")
         if alignment == 'optimal':
@@ -172,43 +183,38 @@ class Size(object):
     def convert(self, units):
         return (size_units[units] * length) / 512
 
-class FSType(object):
-    def __init__(self, fs=None,
+#class FSType(object):
+    #def __init__(self, fs=None,
 
 class Partition(object):
-    def __init__(self, disk=None, size=None, type=0, fs=None,
-                    name=None, start=None, end=None, part=None):
-        self.__name = name
-        self.__fs = fs
+    def __init__(self, disk=None, size=None, type='NORMAL', fs='ext3',
+                    name='', start=None, end=None, part=None):
         if part:
             self.__partition = part
+            self.__disk = self.__partition.contents.disk
         elif disk and size:
-            if start:
-                if not end:
-                    end = start + size.sectors - 1
-                if (end - start) != (size.sectors - 1):
-                    raise ValueError("Dude, your geometry is messed up.")
-            else:
-                last_part_num = disk_get_last_partition_num(disk._Disk__disk)
-                last_part = disk_get_partition(disk._Disk__disk, last_part_num)
-                last_end_sector = last_part.contents.geom.end
-                start = last_end_sector + 1
-                end = start + size.sectors - 1
-            if fs:
+            if not type in partition_type.values():
+                raise ValueError("Invalid partition type '%s'" % type)
+            part_type = [key for key,val in partition_type.iteritems() if val == type][0]
+            if type != 'EXTENDED' and fs != None:
                 filesystem = file_system_type_get(fs)
-            else:
-                filesystem = None
-            self.__partition = partition_new(disk._Disk__disk, type, filesystem, start, end)
+            self.__disk = disk._Disk__disk
+            start_sector, end_sector = self._get_sectors(start, end, size)
+            self.__partition = partition_new(self.__disk, part_type, filesystem, start_sector, end_sector)
+            self.set_name(name)
         else:
             raise Exception("Dude WTF?")
 
     @property
     def disk(self):
-        return Disk(None, self.__partition.contents.disk)
+        return Disk(disk=self.__disk)
 
     @property
     def geom(self):
-        return self.__partition.contents.geom
+        start =  self.__partition.contents.geom.start
+        end =  self.__partition.contents.geom.end
+        length =  self.__partition.contents.geom.length
+        return (start, end, length)
 
     @property
     def num(self):
@@ -228,13 +234,26 @@ class Partition(object):
 
     @property
     def name(self):
-        return self.__name
+        return partition_get_name(self.__partition)
 
-    @property
-    def fs(self):
-       return self.__fs
+    def set_name(self, name):
+        if self.disk.type_features != 'PARTITION_NAME':
+            raise NotImplementedError("The disk does not support partition names.")
+        new_name = partition_set_name(self.__partition, name)
+        if not new_name:
+            raise Exception("Failed to set name %s to partition." % name)
+        return
 
-   #@property
-   #def size(self, units="MB"):
-
-
+    def _get_sectors(self, start, end, size):
+        if start:
+            if not end:
+                end = start + size.sectors - 1
+            if (end - start) != (size.sectors - 1):
+                raise ValueError("Dude, your geometry is messed up.")
+        else:
+            last_part_num = disk_get_last_partition_num(self.__disk)
+            last_part = disk_get_partition(self.__disk, last_part_num)
+            last_end_sector = last_part.contents.geom.end
+            start = last_end_sector + 1
+            end = start + size.sectors - 1
+        return (start, end)
