@@ -1,5 +1,4 @@
 from conversion import *
-#from partition import *
 import os
 
 disk_features = {
@@ -114,35 +113,13 @@ class Disk(object):
         partition = part._Partition__partition
         disk = self.__disk
         start, end, length = part.geom
-        #magic_number = 1953
-        #magic_start = ((start / magic_number) + 1) * magic_number
-        #magic_end = magic_start + length - 1
-        #if (start - 1953) < 0:
-            #start = 0
-        #end += 1953
         range_start = geometry_new(self.__device, start, 1)
         range_end = geometry_new(self.__device, end, 1)
-        #partition.contents.geom.end = 0
-        #partition.contents.length = start + end
-        print "START RANGE:\n"
-        print range_start.contents.start
-        print range_start.contents.end
-        print range_start.contents.length
-        print "END RANGE:\n"
-        print range_end.contents.start
-        print range_end.contents.end
-        print range_end.contents.length
         user_constraint = constraint_new(alignment_any, alignment_any, range_start, range_end, 1, disk.contents.dev.contents.length)
         if not bool(user_constraint):
             raise Exception("Could not set user defined constraint.")
         if part.alignment == 'optimal':
             dev_constraint = device_get_optimal_aligned_constraint(self.__device)
-            #mb = Size(1, "MB")
-            #partition.contents.geom.start += mb.sectors
-            #partition.contents.geom.end += mb.sectors
-            #range_start = geometry_new(self.__device, partition.contents.geom.start, 1)
-            #range_end = geometry_new(self.__device, partition.contents.geom.end, 1)
-            #user_constraint = constraint_new(alignment_any, alignment_any, range_start, range_end, 1, length)
         elif part.alignment == 'minimal':
             dev_constraint = device_get_minimal_aligned_constraint(self.__device)
         else:
@@ -155,12 +132,9 @@ class Disk(object):
         if not bool(final_constraint):
             raise Exception("Could not set device constraint.")
         added = disk_add_partition(disk, partition, final_constraint)
-        print "Added val is:\n"
-        print added
         constraint_destroy(final_constraint)
         if not added:
-            #disk_remove_partition(disk, partition)
-            self.delete_partition
+            disk_remove_partition(disk, partition)
             raise Exception("Failed to add partition")
         if part.name:
             set_name = partition_set_name(partition, part.name)
@@ -222,14 +196,12 @@ class Partition(object):
             if type != 'EXTENDED' and fs != None:
                 filesystem = file_system_type_get(fs)
             self.__disk = disk._Disk__disk
-            if align == 'optimal':
+            if align == 'optimal' or align == 'minimal':
                 dev = self.__disk.contents.dev
-                start_sector, end_sector = self._get_optimal_alignment(dev, start, end, size)
-            elif align == 'minimal':
-                start_sector, end_sector = self._get_minimal_alignment(start, end, size)
+                a_start, a_end = self._get_alignment(dev, align, start, end, size)
             else:
                 raise ValueError("Alignment option '%s' does not exist." % align)
-            self.__partition = partition_new(self.__disk, part_type, filesystem, start_sector, end_sector)
+            self.__partition = partition_new(self.__disk, part_type, filesystem, a_start, a_end)
             self.set_name(name)
         else:
             raise Exception("Dude WTF?")
@@ -267,7 +239,17 @@ class Partition(object):
 
     @property
     def alignment(self):
-        return 'optimal'
+        if self.__align:
+            return self.__align
+        else:
+            optimal = device_get_optimum_alignment(self.__disk.contents.dev)
+            minimal = device_get_minimum_alignment(self.__disk.contents.dev)
+            start, e, l = self.geom
+            if start % optimal.contents.grain_size == optimal.contents.offset:
+                return 'optimal'
+            if start % minimal.contents.grain_size == minimal.contents.offset:
+                return 'minimal'
+        return None
 
     def set_name(self, name):
         if self.disk.type_features != 'PARTITION_NAME':
@@ -277,7 +259,7 @@ class Partition(object):
             raise Exception("Failed to set name %s to partition." % name)
         return
 
-    def _get_minimal_alignment(self, start, end, size):
+    def _snap_sectors(self, start, end, size):
         if start:
             if not end:
                 end = start + size.sectors - 1
@@ -288,25 +270,22 @@ class Partition(object):
             last_part = disk_get_partition(self.__disk, last_part_num)
             last_end_sector = last_part.contents.geom.end
             start = last_end_sector + 1
-            #magic_number = 1953
-            #magic_start = ((start / magic_number) + 1) * magic_number
-            #magic_end = magic_start + size.sectors - 1
             end = start + size.sectors - 1
         return (start, end)
 
-    def _get_optimal_alignment(self, dev, start, end, size):
-        constraint = device_get_optimal_aligned_constraint(dev)
+    def _get_alignment(self, dev, align, start, end, size):
+        const = getattr(parted, "ped_device_get_%s_aligned_constraint" % align)
+        constraint = const(dev)
         start_offset = constraint.contents.start_align.contents.offset
         start_grain = constraint.contents.start_align.contents.grain_size
         end_offset = constraint.contents.end_align.contents.offset
         end_grain = constraint.contents.end_align.contents.grain_size
-        snap_start, snap_end = self._get_minimal_alignment(start, end, size)
-        if snap_start % start_grain == 0:
+        snap_start, snap_end = self._snap_sectors(start, end, size)
+        if snap_start % start_grain == start_offset:
             start = snap_start
         else:
             start = ((snap_start / start_grain) + 1) * start_grain
         end = start + size.sectors
-        if (end - end_offset) % end_grain != 0:
+        if (end - end_offset) % end_grain != end_offset:
             end = ((end / end_grain) * end_grain) + end_offset
         return (start, end)
-
