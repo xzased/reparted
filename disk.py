@@ -41,14 +41,16 @@ size_units = {
 class Size(object):
     def __init__(self, length, units="MB"):
         self.__length = length
+        self.units = units
         if units == "%":
+            if not (0 < length <= 100):
+                raise ValueError("%i%% is invalid" % length)
             self.sectors = None
         else:
             self.sectors = (size_units[units] * length) / 512
-        self.units = units
 
-    def convert(self, units):
-        return (size_units[units] * length) / 512
+    def convert(self, units, sector_size):
+        return size_units[units] * (self.sectors / sector_size )
 
 class DiskError(Exception):
     pass
@@ -56,7 +58,7 @@ class DiskError(Exception):
 class Disk(object):
     def __init__(self, device=None, disk=None):
         if device:
-            self.__device = device._Device__device
+            self.__device = device._ped_device
             self.__disk = disk_new(self.__device)
         elif disk:
             self.__disk = disk
@@ -65,8 +67,20 @@ class Disk(object):
             raise Exception("Dude WTF?")
 
     @property
+    def _ped_device(self):
+        return self.__device
+
+    @property
+    def _ped_disk(self):
+        return self.__disk
+
+    @property
     def type_name(self):
         return self.__disk.contents.type.contents.name
+
+    @property
+    def device(self):
+        return self.__device
 
     @property
     def type_features(self):
@@ -98,7 +112,6 @@ class Disk(object):
             p = Partition(part=part)
             partitions.append(p)
             part = disk_next_partition(self.__disk, part)
-
         return partitions
 
     def add_partition(self, part):
@@ -107,7 +120,7 @@ class Disk(object):
             if p.geom == part.geom:
                 raise DiskError
         except DiskError:
-            raise ValueError("This partition already exists in the disk... And yeah, my english sucks.")
+            raise ValueError("This partition already exists.")
         except ValueError:
             pass
         partition = part._Partition__partition
@@ -174,9 +187,6 @@ class Disk(object):
             raise ValueError("Partition number %i does not exist." % part_num)
         return partition
 
-    def _get_ped_device(self):
-        return self.__disk.contents.dev
-
     def get_partition(self, part_num):
         partition = Partition(part=self._get_ped_partition(part_num))
         return partition
@@ -187,7 +197,8 @@ class Partition(object):
         if part:
             self.__align = None
             self.__partition = part
-            self.__disk = self.__partition.contents.disk
+            self.__ped_disk = self.__partition.contents.disk
+            self.__disk = Disk(disk=self.__ped_disk)
         elif disk and size:
             self.__align = align
             if not type in partition_type.values():
@@ -195,20 +206,25 @@ class Partition(object):
             part_type = [key for key,val in partition_type.iteritems() if val == type][0]
             if type != 'EXTENDED' and fs != None:
                 filesystem = file_system_type_get(fs)
-            self.__disk = disk._Disk__disk
+            self.__ped_disk = disk._ped_disk
+            self.__disk = Disk(disk=self.__ped_disk)
             if align == 'optimal' or align == 'minimal':
-                dev = self.__disk.contents.dev
+                dev = disk._ped_device
                 a_start, a_end = self._get_alignment(dev, align, start, end, size)
             else:
                 raise ValueError("Alignment option '%s' does not exist." % align)
-            self.__partition = partition_new(self.__disk, part_type, filesystem, a_start, a_end)
+            self.__partition = partition_new(self.__ped_disk, part_type, filesystem, a_start, a_end)
             self.set_name(name)
         else:
             raise Exception("Dude WTF?")
 
     @property
     def disk(self):
-        return Disk(disk=self.__disk)
+        return self.__disk
+
+    @property
+    def device(self):
+        return self.disk.device
 
     @property
     def geom(self):
@@ -242,8 +258,8 @@ class Partition(object):
         if self.__align:
             return self.__align
         else:
-            optimal = device_get_optimum_alignment(self.__disk.contents.dev)
-            minimal = device_get_minimum_alignment(self.__disk.contents.dev)
+            optimal = device_get_optimum_alignment(self.disk._ped_device)
+            minimal = device_get_minimum_alignment(self.disk._ped_device)
             start, e, l = self.geom
             if start % optimal.contents.grain_size == optimal.contents.offset:
                 return 'optimal'
@@ -266,8 +282,8 @@ class Partition(object):
             if (end - start) != (size.sectors - 1):
                 raise ValueError("Dude, your geometry is messed up.")
         else:
-            last_part_num = disk_get_last_partition_num(self.__disk)
-            last_part = disk_get_partition(self.__disk, last_part_num)
+            last_part_num = disk_get_last_partition_num(self.disk._ped_disk)
+            last_part = disk_get_partition(self.disk._ped_disk, last_part_num)
             last_end_sector = last_part.contents.geom.end
             start = last_end_sector + 1
             end = start + size.sectors - 1
@@ -289,3 +305,7 @@ class Partition(object):
         if (end - end_offset) % end_grain != end_offset:
             end = ((end / end_grain) * end_grain) + end_offset
         return (start, end)
+
+    def _get_percent_size(self, length):
+        device_length = self.device.length
+        return
