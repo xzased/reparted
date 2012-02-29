@@ -6,6 +6,11 @@ disk_features = {
     2 : 'PARTITION_NAME'
 }
 
+disk_labels = [
+    "gpt",
+    "msdos"
+]
+
 alignment_any = PedAlignment(0, 1)
 
 partition_type = {
@@ -190,6 +195,31 @@ class Disk(object):
     def get_partition(self, part_num):
         partition = Partition(part=self._get_ped_partition(part_num))
         return partition
+
+    def _destroy_disk(self, disk=None):
+        if disk:
+            disk_destroy(disk)
+        else:
+            if self.__disk:
+                disk_destroy(self._ped_disk)
+                self.__disk = None
+            else:
+                raise Exception("Disk is not initialized biatch!")
+
+    def set_label(self, label):
+        if label not in disk_labels:
+            raise ValueError("Disk label '%s' not supported." % label)
+        disk_type = disk_get_type(label)
+        if not bool(disk_type):
+            raise Exception("Failed to get disk type.")
+        self._destroy_disk()
+        new_disk = disk_new_fresh(self._ped_device, disk_type)
+        if not bool(new_disk):
+            raise Exception("Failed to create new disk.")
+        self.__disk = new_disk
+        self.commit()
+        self._destroy_disk(disk=new_disk)
+        self.__disk = disk_new(self.__device)
 
 class Partition(object):
     def __init__(self, disk=None, size=None, type='NORMAL', fs='ext3', align='optimal',
