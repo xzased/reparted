@@ -22,6 +22,24 @@ partition_type = {
     10 : 'PROTECTED'
 }
 
+partition_flag = {
+    "BOOT" : 1,
+    "ROOT" : 2,
+    "SWAP" : 3,
+    "HIDDEN" : 4,
+    "RAID" : 5,
+    "LVM" : 6,
+    "LBA" : 7,
+    "HPSERVICE" : 8,
+    "PALO" : 9,
+    "PREP" : 10,
+    "MSFT_RESERVED" : 11,
+    "BIOS_GRUB" : 12,
+    "APPLE_TV_RECOVERY" : 13,
+    "DIAG" : 14,
+    "LEGACY_BOOT" : 15
+}
+
 size_units = {
     "B":    1,       # byte
     "KB":   1000**1, # kilobyte
@@ -109,9 +127,7 @@ class Disk(object):
         part = disk_next_partition(self.__disk, None)
 
         while part:
-            if part.contents.type == 4 or \
-                part.contents.type == 8 or \
-                part.contents.type == 10:
+            if part.contents.type > 2:
                 part = disk_next_partition(self.__disk, part)
                 continue
             p = Partition(part=part)
@@ -339,3 +355,15 @@ class Partition(object):
     def _get_percent_size(self, length):
         device_length = self.device.length
         return
+
+    def _check_flag(self, flag):
+        if not flag in partition_flag.keys():
+            raise ValueError("Flag '%s' not supported." % flag)
+        check = partition_is_flag_available(self.__partition, partition_flag[flag])
+        if not check:
+            raise ValueError("Flag '%s' not available for this partition." % flag)
+
+    def set_flag(self, flag, state):
+        self._check_flag(flag)
+        partition_set_flag(self.__partition, partition_flag[flag], int(state))
+

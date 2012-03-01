@@ -32,6 +32,8 @@ fs_type         -Returns the filesystem block geometry type (ext3, ext4, etc...)
 name            -The partition name if set
 set_name        -If the partition table supports names you can change it with this method,
                     you will need to commit the changes to disk though.
+set_flag        -Sets the partition flag, it takes a string argument ("BOOT", "LVM",
+                    "BOOT_LEGACY", etc...) and a boolean (True or False, to toggle the state.
 alignment       -Returns either 'minimal' or 'optimal' depending on the partition start sector.
                     Notice, however, that although you may specify a minimal alignment on a
                     new partition, this may return optimal depending if the partition start
