@@ -40,41 +40,6 @@ partition_flag = {
     "LEGACY_BOOT" : 15
 }
 
-size_units = {
-    "B":    1,       # byte
-    "KB":   1000**1, # kilobyte
-    "MB":   1000**2, # megabyte
-    "GB":   1000**3, # gigabyte
-    "TB":   1000**4, # terabyte
-    "PB":   1000**5, # petabyte
-    "EB":   1000**6, # exabyte
-    "ZB":   1000**7, # zettabyte
-    "YB":   1000**8, # yottabyte
-    "KiB":  1024**1, # kibibyte
-    "MiB":  1024**2, # mebibyte
-    "GiB":  1024**3, # gibibyte
-    "TiB":  1024**4, # tebibyte
-    "PiB":  1024**5, # pebibyte
-    "EiB":  1024**6, # exbibyte
-    "ZiB":  1024**7, # zebibyte
-    "YiB":  1024**8, # yobibyte
-    "%":    1        # Fuck you pyparted, we've got percents!!!
-}
-
-class Size(object):
-    def __init__(self, length, units="MB"):
-        self.__length = length
-        self.units = units
-        if units == "%":
-            if not (0 < length <= 100):
-                raise ValueError("%i%% is invalid" % length)
-            self.sectors = None
-        else:
-            self.sectors = (size_units[units] * length) / 512
-
-    def convert(self, units, sector_size):
-        return size_units[units] * (self.sectors / sector_size )
-
 class DiskError(Exception):
     pass
 
@@ -254,6 +219,7 @@ class Partition(object):
                 filesystem = file_system_type_get(fs)
             self.__ped_disk = disk._ped_disk
             self.__disk = Disk(disk=self.__ped_disk)
+            length, units = size
             if align == 'optimal' or align == 'minimal':
                 dev = disk._ped_device
                 a_start, a_end = self._get_alignment(dev, align, start, end, size)
@@ -366,4 +332,3 @@ class Partition(object):
     def set_flag(self, flag, state):
         self._check_flag(flag)
         partition_set_flag(self.__partition, partition_flag[flag], int(state))
-

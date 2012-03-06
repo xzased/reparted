@@ -1,30 +1,12 @@
+from ctypes.util import find_library
 from ctypes import *
-from reparted import *
 
-# No enum data type in ctypes, just assign values.
-# PedDiskFlag
-PED_DISK_CYLINDER_ALIGNMENT = 1
+lib = find_library("parted")
 
-# PedPartitionFlag
-PED_PARTITION_BOOT = 1
-PED_PARTITION_ROOT = 2
-PED_PARTITION_SWAP = 3
-PED_PARTITION_HIDDEN = 4
-PED_PARTITION_RAID = 5
-PED_PARTITION_LVM = 6
-PED_PARTITION_LBA = 7
-PED_PARTITION_HPSERVICE = 8
-PED_PARTITION_PALO = 9
-PED_PARTITION_PREP = 10
-PED_PARTITION_MSFT_RESERVED = 11
-PED_PARTITION_BIOS_GRUB = 12
-PED_PARTITION_APPLE_TV_RECOVERY = 13
-PED_PARTITION_DIAG = 14
-PED_PARTITION_LEGACY_BOOT = 15
+if not lib:
+    raise Exception("It's not a toomah!")
 
-# PedDiskTypeFeature
-PED_DISK_TYPE_EXTENDED = 1
-PED_DISK_TYPE_PARTITION_NAME = 2
+parted = CDLL("/usr/local/lib/libparted.so.1.0.0")
 
 class PedCHSGeometry(Structure):
     _fields_ = [
@@ -93,10 +75,6 @@ class PedDisk(Structure):
         ('needs_clobber', c_int),
         ('update_mode', c_int),
      ]
-    #def __init__(self):
-        #name = self.type.contents.name
-        #ops = self.type.contents.ops
-        #ops.contents.alloc_metadata = c_char_p(name + '_alloc_metadata')
 
 class PedDiskOps(Structure):
     _fields_ = [
@@ -169,14 +147,29 @@ class PedConstraint(Structure):
      ]
 # End of Alignment/Constraint stuff
 
-# Devices
+# Device Function conversions
 device_get = parted.ped_device_get
 device_get.restype = POINTER(PedDevice)
 device_get_constraint = parted.ped_device_get_constraint
 device_get_constraint.restype = POINTER(PedConstraint)
-devices = POINTER(PedDevice)
+device_get_optimal_aligned_constraint = parted.ped_device_get_optimal_aligned_constraint
+device_get_optimal_aligned_constraint.argtypes = [POINTER(PedDevice)]
+device_get_optimal_aligned_constraint.restype = POINTER(PedConstraint)
+device_get_minimal_aligned_constraint = parted.ped_device_get_minimal_aligned_constraint
+device_get_minimal_aligned_constraint.argtypes = [POINTER(PedDevice)]
+device_get_minimal_aligned_constraint.restype = POINTER(PedConstraint)
+device_get_optimum_alignment = parted.ped_device_get_optimum_alignment
+device_get_optimum_alignment.argtypes = [POINTER(PedDevice)]
+device_get_optimum_alignment.restype = POINTER(PedAlignment)
+device_get_minimum_alignment = parted.ped_device_get_minimum_alignment
+device_get_minimum_alignment.argtypes = [POINTER(PedDevice)]
+device_get_minimum_alignment.restype = POINTER(PedAlignment)
+device_get__constraint = parted.ped_device_get_constraint
+device_get_constraint.argtypes = [POINTER(PedDevice)]
+device_get_constraint.restype = POINTER(PedConstraint)
+#devices = POINTER(PedDevice)
 
-# Disks
+# Disk Function conversions
 disk_probe = parted.ped_disk_probe
 disk_probe.restype = POINTER(PedDiskType)
 disk_new = parted.ped_disk_new
@@ -207,43 +200,19 @@ disk_commit_to_dev.argtypes = [POINTER(PedDisk)]
 disk_destroy = parted.ped_disk_destroy
 disk_destroy.argtypes = [POINTER(PedDisk)]
 disk_destroy.restype = None
-disk_print = parted.ped_disk_print
-disk_print.argtypes = [POINTER(PedDisk)]
+#disk_print = parted.ped_disk_print
+#disk_print.argtypes = [POINTER(PedDisk)]
+disk_get_type = parted.ped_disk_type_get
+disk_get_type.restype = POINTER(PedDiskType)
+disk_remove_partition = parted.ped_disk_remove_partition
+disk_remove_partition.argtypes = [POINTER(PedDisk), POINTER(PedPartition)]
+
+# Partition Function conversions
 partition_new = parted.ped_partition_new
 partition_new.argtypes = [POINTER(PedDisk), c_int, POINTER(PedFileSystemType), PedSector, PedSector]
 partition_new.restype = POINTER(PedPartition)
 partition_is_busy = parted.ped_partition_is_busy
 partition_is_busy.argtypes = [POINTER(PedPartition)]
-disk_get_type = parted.ped_disk_type_get
-disk_get_type.restype = POINTER(PedDiskType)
-constraint_new = parted.ped_constraint_new
-constraint_new.argtypes = [POINTER(PedAlignment), POINTER(PedAlignment), POINTER(PedGeometry), POINTER(PedGeometry), PedSector, PedSector]
-constraint_new.restype = POINTER(PedConstraint)
-geometry_new = parted.ped_geometry_new
-geometry_new.argtypes = [POINTER(PedDevice), PedSector, PedSector]
-geometry_new.restype = POINTER(PedGeometry)
-device_get_optimal_aligned_constraint = parted.ped_device_get_optimal_aligned_constraint
-device_get_optimal_aligned_constraint.argtypes = [POINTER(PedDevice)]
-device_get_optimal_aligned_constraint.restype = POINTER(PedConstraint)
-device_get_minimal_aligned_constraint = parted.ped_device_get_minimal_aligned_constraint
-device_get_minimal_aligned_constraint.argtypes = [POINTER(PedDevice)]
-device_get_minimal_aligned_constraint.restype = POINTER(PedConstraint)
-device_get_optimum_alignment = parted.ped_device_get_optimum_alignment
-device_get_optimum_alignment.argtypes = [POINTER(PedDevice)]
-device_get_optimum_alignment.restype = POINTER(PedAlignment)
-device_get_minimum_alignment = parted.ped_device_get_minimum_alignment
-device_get_minimum_alignment.argtypes = [POINTER(PedDevice)]
-device_get_minimum_alignment.restype = POINTER(PedAlignment)
-device_get__constraint = parted.ped_device_get_constraint
-device_get_constraint.argtypes = [POINTER(PedDevice)]
-device_get_constraint.restype = POINTER(PedConstraint)
-constraint_intersect = parted.ped_constraint_intersect
-constraint_intersect.argtypes = [POINTER(PedConstraint), POINTER(PedConstraint)]
-constraint_intersect.restype = POINTER(PedConstraint)
-constraint_destroy = parted.ped_constraint_destroy
-constraint_destroy.argtypes = [POINTER(PedConstraint)]
-disk_remove_partition = parted.ped_disk_remove_partition
-disk_remove_partition.argtypes = [POINTER(PedDisk), POINTER(PedPartition)]
 partition_get_name = parted.ped_partition_get_name
 partition_get_name.argtypes = [POINTER(PedPartition)]
 partition_get_name.restype = c_char_p
@@ -253,6 +222,17 @@ partition_is_flag_available = parted.ped_partition_is_flag_available
 partition_is_flag_available.argtypes = [POINTER(PedPartition), c_int]
 partition_set_flag = parted.ped_partition_set_flag
 partition_set_flag.argtypes = [POINTER(PedPartition), c_int, c_int]
+geometry_new = parted.ped_geometry_new
+geometry_new.argtypes = [POINTER(PedDevice), PedSector, PedSector]
+geometry_new.restype = POINTER(PedGeometry)
+constraint_new = parted.ped_constraint_new
+constraint_new.argtypes = [POINTER(PedAlignment), POINTER(PedAlignment), POINTER(PedGeometry), POINTER(PedGeometry), PedSector, PedSector]
+constraint_new.restype = POINTER(PedConstraint)
+constraint_intersect = parted.ped_constraint_intersect
+constraint_intersect.argtypes = [POINTER(PedConstraint), POINTER(PedConstraint)]
+constraint_intersect.restype = POINTER(PedConstraint)
+constraint_destroy = parted.ped_constraint_destroy
+constraint_destroy.argtypes = [POINTER(PedConstraint)]
 file_system_type_get = parted.ped_file_system_type_get
 file_system_type_get.argtypes = [c_char_p]
 file_system_type_get.restype = POINTER(PedFileSystemType)
