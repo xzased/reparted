@@ -58,15 +58,9 @@ class Device(object):
         else:
             self.__device = self._probe_ped_device()
 
-        #self.__disk = Disk(device=self)
-
     @property
     def _ped_device(self):
         return self.__device
-
-    #@property
-    #def disk(self):
-        #return self.__disk
 
     @property
     def length(self):

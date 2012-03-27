@@ -16,7 +16,7 @@ size_units = {
     "EiB":  1024**6, # exbibyte
     "ZiB":  1024**7, # zebibyte
     "YiB":  1024**8, # yobibyte
-    "%":    1        # Fuck you pyparted, we've got percents!!!
+    "%":    1        # we've got percents!!!
 }
 
 class Size(object):

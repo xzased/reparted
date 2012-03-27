@@ -3,19 +3,19 @@ you can set a device and add partitions to it using the following code:
 
 ############################
 
-from reparted.device import *
+from reparted import *
 
-dev = Device("/dev/sdb")    # or whatever your preferred dev is. If you call it without any
-                            # arguments it will probe all standard devices and default to the
-                            # first one it finds
-disk = Disk(dev)
-sz = Size(200, "MB")
-new = Partition(disk, sz) # this defaults the filesystem to ext3 and partition type "NORMAL"
-#new = Partition(disk, sz, fs="ext4") # set the filesystem blocks to ext4
+dev = device.Device("/dev/sdb")         # or whatever your preferred dev is. If you call it without any
+                                        # arguments it will probe all standard devices and default to the
+                                        # first one it finds
+mydisk = disk.Disk(dev)
+sz = size.Size(dev, 200, "MB")
+new = disk.Partition(disk, sz)          # this defaults the filesystem to ext3 and partition type "NORMAL"
+#new = Partition(disk, sz, fs="ext4")   # set the filesystem blocks to ext4
 #new = Partition(disk, sz, fs="ext4", name="hire_ruben") # set a name
 #new = Partition(disk, sz, align='minimal') # sets the partition alignment to minimal.
-disk.add_partition(new)
-disk.commit()
+mydisk.add_partition(new)
+mydisk.commit()
 
 ############################
 

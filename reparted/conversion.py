@@ -4,7 +4,7 @@ from ctypes import *
 lib = find_library("parted")
 
 if not lib:
-    raise Exception("It's not a toomah!")
+    raise Exception("Parted library not found.")
 
 parted = CDLL(lib)
 

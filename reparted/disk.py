@@ -141,11 +141,11 @@ class Disk(object):
                 disk_remove_partition(disk, partition)
                 raise Exception("Failed to set partition name.")
 
-    def delete_partition(self, part=None, part_num=None):
+    def delete_partition(self, part):
         if part and isinstance(part, Partition):
             partition = part._Partition__partition
-        elif part_num:
-            partition = self._get_ped_partition(part_num)
+        elif type(part) is int:
+            partition = self._get_ped_partition(part)
         else:
             raise ValueError("You must specify a Partition instance or a partition number.")
         if partition_is_busy(partition):
@@ -219,14 +219,14 @@ class Partition(object):
                 filesystem = file_system_type_get(fs)
             self.__ped_disk = disk._ped_disk
             self.__disk = Disk(disk=self.__ped_disk)
-            length, units = size
             if align == 'optimal' or align == 'minimal':
                 dev = disk._ped_device
                 a_start, a_end = self._get_alignment(dev, align, start, end, size)
             else:
                 raise ValueError("Alignment option '%s' does not exist." % align)
             self.__partition = partition_new(self.__ped_disk, part_type, filesystem, a_start, a_end)
-            self.set_name(name)
+            if name:
+                self.set_name(name)
         else:
             raise Exception("Dude WTF?")
 
@@ -263,6 +263,8 @@ class Partition(object):
 
     @property
     def name(self):
+        if self.disk.type_features != 'PARTITION_NAME':
+            return None
         return partition_get_name(self.__partition)
 
     @property
