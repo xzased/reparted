@@ -1,5 +1,21 @@
+#This file is part of reparted.
+
+#reparted is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#reparted is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with reparted.  If not, see <http://www.gnu.org/licenses/>.
+
 from conversion import *
 from disk import *
+from exception import DeviceError
 import os
 
 device_type = {
@@ -57,6 +73,8 @@ class Device(object):
             self.__device = dev
         else:
             self.__device = self._probe_ped_device()
+        if not bool(self.__device):
+            raise DeviceError(500)
 
     @property
     def _ped_device(self):
@@ -131,9 +149,9 @@ class Device(object):
     def _probe_ped_device(self):
         for path in standard_devices:
             dev = device_probe(path)
-            if dev:
+            if bool(dev):
                 return dev
-        raise Exception("No devices found.")
+        raise DeviceError(500)
 
 def probe_standard_devices():
     devices = []

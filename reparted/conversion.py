@@ -1,3 +1,18 @@
+#This file is part of reparted.
+
+#reparted is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#reparted is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with reparted.  If not, see <http://www.gnu.org/licenses/>.
+
 from ctypes.util import find_library
 from ctypes import *
 
@@ -46,7 +61,6 @@ PedDevice._fields_ = [
     ('arch_specific', c_void_p),
 ]
 
-# Geometry stuff starts here
 class PedGeometry(Structure):
     _fields_ = [
         ('dev', POINTER(PedDevice)),
@@ -54,7 +68,6 @@ class PedGeometry(Structure):
         ('length', PedSector),
         ('end', PedSector),
      ]
-# Geometry stuff ends here
 
 class PedPartition(Structure):
     pass
@@ -134,8 +147,6 @@ PedPartition._fields_ = [
     ('disk_specific', c_void_p),
 ]
 
-# Start of Alignment/Constraint stuff
-
 class PedConstraint(Structure):
     _fields_ = [
         ('start_align', POINTER(PedAlignment)),
@@ -145,7 +156,6 @@ class PedConstraint(Structure):
         ('min_size', PedSector),
         ('max_size', PedSector),
      ]
-# End of Alignment/Constraint stuff
 
 # Device Function conversions
 device_get = parted.ped_device_get
@@ -167,7 +177,6 @@ device_get_minimum_alignment.restype = POINTER(PedAlignment)
 device_get__constraint = parted.ped_device_get_constraint
 device_get_constraint.argtypes = [POINTER(PedDevice)]
 device_get_constraint.restype = POINTER(PedConstraint)
-#devices = POINTER(PedDevice)
 
 # Disk Function conversions
 disk_probe = parted.ped_disk_probe
@@ -191,8 +200,6 @@ disk_delete_partition = parted.ped_disk_delete_partition
 disk_delete_partition.argtypes = [POINTER(PedDisk), POINTER(PedPartition)]
 disk_delete_all = parted.ped_disk_delete_all
 disk_delete_all.argtypes = [POINTER(PedDisk)]
-# I would rather call commit_to_dev and commit_to_os manually
-#parted.ped_disk_commit.argtypes = [POINTER(PedDisk)]
 disk_commit_to_os = parted.ped_disk_commit_to_os
 disk_commit_to_os.argtypes = [POINTER(PedDisk)]
 disk_commit_to_dev = parted.ped_disk_commit_to_dev
@@ -200,8 +207,6 @@ disk_commit_to_dev.argtypes = [POINTER(PedDisk)]
 disk_destroy = parted.ped_disk_destroy
 disk_destroy.argtypes = [POINTER(PedDisk)]
 disk_destroy.restype = None
-#disk_print = parted.ped_disk_print
-#disk_print.argtypes = [POINTER(PedDisk)]
 disk_get_type = parted.ped_disk_type_get
 disk_get_type.restype = POINTER(PedDiskType)
 disk_remove_partition = parted.ped_disk_remove_partition

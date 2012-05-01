@@ -1,3 +1,20 @@
+#This file is part of reparted.
+
+#reparted is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#reparted is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with reparted.  If not, see <http://www.gnu.org/licenses/>.
+
+from exception import SizeError
+
 size_units = {
     "B":    1,       # byte
     "KB":   1000**1, # kilobyte
@@ -20,16 +37,18 @@ size_units = {
 }
 
 class Size(object):
-    def __init__(self, dev, length, units="MB"):
+    def __init__(self, length, units="MB", sector_size=512, dev=None):
         self.__length = length
         self.units = units
-        self.sector_size = dev.sector_size
-        if units == "%":
-            if not (0 < length <= 100) or type(length) is float:
-                raise ValueError("%i%% is invalid" % length)
-            self.sectors = (dev.length / 100) * length
-        else:
+        self.sector_size = getattr(dev, "sector_size", sector_size)
+        if units != "%":
             self.sectors = (size_units[units] * length) / self.sector_size
+        elif not dev:
+            raise SizeError(400)
+        elif not (0 < length <= 100) or type(length) is float:
+            raise SizeError(401)
+        else:
+            self.sectors = (dev.length / 100) * length
 
     def to(self, units):
         return size_units[units] * self.sectors

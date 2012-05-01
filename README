@@ -1,25 +1,27 @@
-Ok, here is a quickie introduction -if u know what I mean-, so this is how it goes for now,
-you can set a device and add partitions to it using the following code:
+Reparted is my attempt at learning python ctypes module to create bindings for c api's so use it
+at your own risk. I was a bit confused on the way parted and pyparted interface works, my aim was
+to create a simple interface. It does not have the full set of features parted has to offer, only
+enough to create and delete partitions and set the labels. Feel free to check the code and point
+out enhancements. For any questions my email is rq.sysadmin@gmail.com, have fun!
 
-############################
+Quick Introduction to add partitions:
 
 from reparted import *
 
-dev = device.Device("/dev/sdb")         # or whatever your preferred dev is. If you call it without any
-                                        # arguments it will probe all standard devices and default to the
-                                        # first one it finds
+dev = device.Device("/dev/sdb")    # or whatever your preferred dev is. If you call it without any
+                            # arguments it will probe all standard devices and default to the
+                            # first one it finds
 mydisk = disk.Disk(dev)
 sz = size.Size(dev, 200, "MB")
-new = disk.Partition(disk, sz)          # this defaults the filesystem to ext3 and partition type "NORMAL"
-#new = Partition(disk, sz, fs="ext4")   # set the filesystem blocks to ext4
-#new = Partition(disk, sz, fs="ext4", name="hire_ruben") # set a name
-#new = Partition(disk, sz, align='minimal') # sets the partition alignment to minimal.
+new = disk.Partition(mydisk, sz) # this defaults the filesystem to ext3 and partition type "NORMAL"
+#new = disk.Partition(mydisk, sz, fs="ext4") # set the filesystem blocks to ext4
+#new = disk.Partition(mydisk, sz, fs="ext4", name="myname") # set a name
+#new = disk.Partition(mydisk, sz, align='minimal') # sets the partition alignment to minimal.
 mydisk.add_partition(new)
 mydisk.commit()
 
-############################
 
-Partition Stuff
+Partition
 
 Now you can access partition properties and methods from the partition instance "new":
 
@@ -39,15 +41,13 @@ alignment       -Returns either 'minimal' or 'optimal' depending on the partitio
                     new partition, this may return optimal depending if the partition start
                     sector turns to be aligned.
 
-############################
-
-Disk Stuff
+Disk
 
 You can create an instance of a disk by providing a device:
 
 
-    dev = Device("/dev/sdb") # or whatever your preferred dev is.
-    disk = Disk(dev)
+    dev = device.Device("/dev/sdb") # or whatever your preferred dev is.
+    mydisk = disk.Disk(dev)
 
 These are the properties and methods for disk instances:
 
@@ -69,17 +69,16 @@ _ped_device     -Returns the ctypes device structure.
 get_partition   -Returns a Partition instance given a partition number.
 set_label       -Takes a string (gpt or msdos) and sets the disk partition table.
 
-############################
 
-Device Stuff
+Device
 
 You can create an instance of a device by providing the path (ie. /dev/sda). If the path
 is not provided, it will probe all standard devices until it finds one and default to it.
-    dev = Device("/dev/sdb") # or whatever your preferred dev is.
+    dev = device.Device("/dev/sdb") # or whatever your preferred dev is.
 
     OR
 
-    dev = Device()
+    dev = device.Device()
 
 These are the properties and methods for device instances:
 
