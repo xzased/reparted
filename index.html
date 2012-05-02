@@ -1,0 +1,580 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to reparted’s documentation! &mdash; reparted 1.1 documentation</title>
+    
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="reparted 1.1 documentation" href="#" />
+    <link rel="next" title="Quickstart" href="quickstart.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="Quickstart"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">reparted 1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-reparted-s-documentation">
+<h1>Welcome to reparted&#8217;s documentation!<a class="headerlink" href="#welcome-to-reparted-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+<span class="target" id="module-device"></span><dl class="class">
+<dt id="device.Device">
+<em class="property">class </em><tt class="descclassname">device.</tt><tt class="descname">Device</tt><big>(</big><em>path=None</em>, <em>dev=None</em><big>)</big><a class="headerlink" href="#device.Device" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Device class is used as a wrapper to libparted&#8217;s ped_device.</em></p>
+<p>You need to call this class before calling Disk. You can create
+a new instance of Device by specifying a path or let it probe
+standard devices:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">reparted</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c"># specify the device path</span>
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&quot;/dev/sdb&quot;</span><span class="p">)</span>
+
+<span class="c"># probe standard devices</span>
+<span class="n">myDevice2</span> <span class="o">=</span> <span class="n">Device</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd>path (str):     Path to your local device of choice (ie. &#8216;/dev/sda&#8217;).
+dev:            A ped_device pointer, usually this is used internally.</dd>
+<dt><em>Raises:</em></dt>
+<dd>DeviceError</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If called without any parameters it will probe all standard devices
+and default to the first one it finds.</p>
+</div>
+<dl class="attribute">
+<dt id="device.Device.bios_geom">
+<tt class="descname">bios_geom</tt><a class="headerlink" href="#device.Device.bios_geom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the bios geometry as a 3-tuple:</p>
+<blockquote>
+<div>(cylinders, heads, sectors)</div></blockquote>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.boot_dirty">
+<tt class="descname">boot_dirty</tt><a class="headerlink" href="#device.Device.boot_dirty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the device is set to boot dirty.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.did">
+<tt class="descname">did</tt><a class="headerlink" href="#device.Device.did" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the device did.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.dirty">
+<tt class="descname">dirty</tt><a class="headerlink" href="#device.Device.dirty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the device is dirty.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.external_mode">
+<tt class="descname">external_mode</tt><a class="headerlink" href="#device.Device.external_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the device is set to external mode.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.host">
+<tt class="descname">host</tt><a class="headerlink" href="#device.Device.host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the device host.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.hw_geom">
+<tt class="descname">hw_geom</tt><a class="headerlink" href="#device.Device.hw_geom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the hardware geometry as a 3-tuple:</p>
+<blockquote>
+<div>(cylinders, heads, sectors)</div></blockquote>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.length">
+<tt class="descname">length</tt><a class="headerlink" href="#device.Device.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the length in sectors of the device.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.model">
+<tt class="descname">model</tt><a class="headerlink" href="#device.Device.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the device model (ie. &#8216;ATA VBOX HARDDISK&#8217;).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.open_count">
+<tt class="descname">open_count</tt><a class="headerlink" href="#device.Device.open_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of times the device has been opened.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.path">
+<tt class="descname">path</tt><a class="headerlink" href="#device.Device.path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the device path (ie. &#8216;/dev/sda&#8217;).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.phys_sector_size">
+<tt class="descname">phys_sector_size</tt><a class="headerlink" href="#device.Device.phys_sector_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the physical sector size.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.read_only">
+<tt class="descname">read_only</tt><a class="headerlink" href="#device.Device.read_only" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the device is set as read only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="device.Device.type">
+<tt class="descname">type</tt><a class="headerlink" href="#device.Device.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the device type (ie. &#8216;SCSI&#8217;).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="device.probe_standard_devices">
+<tt class="descclassname">device.</tt><tt class="descname">probe_standard_devices</tt><big>(</big><big>)</big><a class="headerlink" href="#device.probe_standard_devices" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function probes all standard devices and returns a list
+containing instances of Device of the found standard devices:</p>
+<div class="highlight-python"><pre>from reparted.device import probe_standard_devices
+
+probe_standard_devices()
+[&lt;reparted.device.Device object at 0xb7854d8c&gt;,
+&lt;reparted.device.Device object at 0xb7607eac&gt;]</pre>
+</div>
+</dd></dl>
+
+<span class="target" id="module-size"></span><dl class="class">
+<dt id="size.Size">
+<em class="property">class </em><tt class="descclassname">size.</tt><tt class="descname">Size</tt><big>(</big><em>length</em>, <em>units='MB'</em>, <em>sector_size=512</em>, <em>dev=None</em><big>)</big><a class="headerlink" href="#size.Size" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Size class is used as a container to specify desired partition sizes.</em></p>
+<p>You need to call this class before adding Partition instances.
+The default values for units is &#8220;MB&#8221; and sector_size is set to 512.
+You can manually specify the sector size or pass the device you intend
+to use it with and have it obtain the secdtor size from there:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">reparted</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c"># sector size defaults to 512</span>
+<span class="n">mySize1</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">)</span>
+
+<span class="c"># manually set the sector size to 1024</span>
+<span class="n">mySize2</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">,</span> <span class="n">sector_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+
+<span class="c"># get the sector size from the device</span>
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&#39;/dev/sda&#39;</span><span class="p">)</span>
+<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">,</span> <span class="n">myDevice</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There is an option to choose percentage <em>&#8216;%&#8217;</em> as units, in which case
+you need to pass a Device instance to calculate the sectors needed
+and length should be between 1 and 100:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">reparted</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&#39;/dev/sda&#39;</span><span class="p">)</span>
+<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="s">&quot;%&quot;</span><span class="p">,</span> <span class="n">myDevice</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd><p class="first">length (int):       The desired length.</p>
+<p>units (str):        The desired units (ie. &#8220;MB&#8221;, &#8220;GB&#8221;, &#8220;%&#8221; etc...)</p>
+<p>sector_size (int):  The sector size to be used to calculate.</p>
+<dl class="last docutils">
+<dt>dev:                A Device instance. Only needed when using</dt>
+<dd>percents, otherwise calculations will take
+sector size from Device.sector_size.</dd>
+</dl>
+</dd>
+<dt><em>Raises:</em></dt>
+<dd>SizeError</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When using percent as unit and using the Size instance for multiple
+disks make sure they all have the same sector size.</p>
+</div>
+<dl class="method">
+<dt id="size.Size.pretty">
+<tt class="descname">pretty</tt><big>(</big><em>units='MB'</em><big>)</big><a class="headerlink" href="#size.Size.pretty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the size in the specified units in a pretty string.</p>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd>units (str):    The desired units (ie. &#8220;MB&#8221;, &#8220;GB&#8221;, &#8220;%&#8221; etc...)</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="size.Size.to">
+<tt class="descname">to</tt><big>(</big><em>units</em><big>)</big><a class="headerlink" href="#size.Size.to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the size in the specified units.</p>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd>units (str):    The desired units (ie. &#8220;MB&#8221;, &#8220;GB&#8221;, &#8220;%&#8221; etc...)</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-disk"></span><dl class="class">
+<dt id="disk.Disk">
+<em class="property">class </em><tt class="descclassname">disk.</tt><tt class="descname">Disk</tt><big>(</big><em>device=None</em>, <em>disk=None</em><big>)</big><a class="headerlink" href="#disk.Disk" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Disk class is used as a wrapper to libparted&#8217;s ped_disk.</em></p>
+<p>You need to call this class to list, add or delete partitions.
+A new instance of Disk is initialized by passing the Device instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">reparted</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&quot;/dev/sda&quot;</span><span class="p">)</span>
+<span class="n">myDisk</span> <span class="o">=</span> <span class="n">Disk</span><span class="p">(</span><span class="n">myDevice</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd><p class="first">dev:    A Device class instance.</p>
+<p class="last">disk:   A ped_disk pointer, usually this is used internally.</p>
+</dd>
+<dt><em>Raises:</em></dt>
+<dd>DiskError</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You need to pass either a Device instance or a ped_disk pointer.
+If a disk is being initialized (no partition table) only the
+set_label method is available, with other methods returning
+None or raising DiskError.</p>
+</div>
+<dl class="method">
+<dt id="disk.Disk.set_label">
+<tt class="descname">set_label</tt><big>(</big><em>label</em><big>)</big><a class="headerlink" href="#disk.Disk.set_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the disk partition table (&#8216;gpt&#8217; or &#8216;msdos)&#8217;.
+This method calls commit to set the label changes.</p>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd>label (str):    A partition table type (&#8216;gpt&#8217; or &#8216;msdos&#8217;)</dd>
+<dt><em>Raises:</em></dt>
+<dd>DiskError</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="disk.Partition">
+<em class="property">class </em><tt class="descclassname">disk.</tt><tt class="descname">Partition</tt><big>(</big><em>disk=None</em>, <em>size=None</em>, <em>type='NORMAL'</em>, <em>fs='ext3'</em>, <em>align='optimal'</em>, <em>name=''</em>, <em>start=None</em>, <em>end=None</em>, <em>part=None</em><big>)</big><a class="headerlink" href="#disk.Partition" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Partition class is used as a wrapper to libparted&#8217;s ped_partition.</em></p>
+<p>You need can create Partition instances and add them to disk. A new
+Partition instance can be initialized:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">reparted</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&quot;/dev/sda&quot;</span><span class="p">)</span>
+<span class="n">myDisk</span> <span class="o">=</span> <span class="n">Disk</span><span class="p">(</span><span class="n">myDevice</span><span class="p">)</span>
+<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">)</span>
+
+<span class="c"># Defaults</span>
+<span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">mySize</span><span class="p">)</span>
+
+<span class="c"># Different filesystem and minimal alignment.</span>
+<span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">mySize</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="s">&quot;ext4&quot;</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s">&quot;minimal&quot;</span><span class="p">)</span>
+
+<span class="c"># Initialize with a name</span>
+<span class="k">if</span> <span class="n">myDisk</span><span class="o">.</span><span class="n">type_features</span> <span class="o">==</span> <span class="s">&#39;PARTITION_NAME&#39;</span><span class="p">:</span>
+    <span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">mySize</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd>disk:           A Disk class instance.
+size:           A Size class instance.
+type (str):     The partition type (ie. &#8216;NORMAL&#8217;, &#8216;LOGICAL&#8217;, etc...).
+fs (str):       The filesystem type (ie. &#8216;ext3&#8217;, &#8216;ext4&#8217;, etc...).
+align (str):    The partition alignment, &#8216;minimal&#8217; or &#8216;optimal&#8217;.
+name (str):     The partition name.
+start (int):    The start sector for the partition.
+end (int):      The end sector for the partition.
+part:           A ctypes ped_partition pointer.</dd>
+<dt><em>Raises:</em></dt>
+<dd>PartitionError</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Name is only available when partition type is &#8216;NORMAL&#8217;.
+The start and end arguments are optional and you should only use them when
+your want to specify such attributes, otherwise use optimal alignment.
+The part argument is optional and mostly for internal use.</p>
+</div>
+<dl class="attribute">
+<dt id="disk.Partition.alignment">
+<tt class="descname">alignment</tt><a class="headerlink" href="#disk.Partition.alignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition alignment (&#8216;optimal&#8217; or &#8216;minimal&#8217;).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you specify a &#8216;minimal&#8217; alignment when creating a partition
+but the start sector falls in what would be considered an
+optimal alignment this method will return &#8216;optimal&#8217;.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Partition.device">
+<tt class="descname">device</tt><a class="headerlink" href="#disk.Partition.device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the Device instance this partition belongs to.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Partition.disk">
+<tt class="descname">disk</tt><a class="headerlink" href="#disk.Partition.disk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the ctypes ped_disk pointer.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Partition.fs_type">
+<tt class="descname">fs_type</tt><a class="headerlink" href="#disk.Partition.fs_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition filesystem type.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Partition.geom">
+<tt class="descname">geom</tt><a class="headerlink" href="#disk.Partition.geom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition geometry as a 3-tuple:</p>
+<blockquote>
+<div>(start, end, length)</div></blockquote>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Partition.name">
+<tt class="descname">name</tt><a class="headerlink" href="#disk.Partition.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition name if names are supported by disk type,
+otherwise returns None.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Partition.num">
+<tt class="descname">num</tt><a class="headerlink" href="#disk.Partition.num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition number.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="disk.Partition.set_flag">
+<tt class="descname">set_flag</tt><big>(</big><em>flag</em>, <em>state</em><big>)</big><a class="headerlink" href="#disk.Partition.set_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the partition flag (ie. &#8216;BOOT&#8217;, &#8216;ROOT&#8217;, etc...).</p>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd>flag (str):         The partition flag.
+state (bool):       Toggle the flag state (True or False).</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="disk.Partition.set_name">
+<tt class="descname">set_name</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#disk.Partition.set_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the partition name. If the disk type does not support
+partition names it will raise NotImplementedError.</p>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd>name (str):         The partition name.</dd>
+<dt><em>Raise:</em></dt>
+<dd>NotImplementedError, PartitionError</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Partition.type">
+<tt class="descname">type</tt><a class="headerlink" href="#disk.Partition.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition type.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-exception"></span><dl class="exception">
+<dt id="exception.AddPartitionError">
+<em class="property">exception </em><tt class="descclassname">exception.</tt><tt class="descname">AddPartitionError</tt><big>(</big><em>code</em><big>)</big><a class="headerlink" href="#exception.AddPartitionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when the Disk add_partition method fails for the following reasons:</p>
+<ul class="simple">
+<li><em>Failed to add partition to disk.</em></li>
+<li><em>Failed to set user-defined constraint to disk.</em></li>
+<li><em>Failed to set device constraint to disk.</em></li>
+<li><em>Failed to set partition name to disk.</em></li>
+</ul>
+</dd></dl>
+
+<dl class="exception">
+<dt id="exception.DeletePartitionError">
+<em class="property">exception </em><tt class="descclassname">exception.</tt><tt class="descname">DeletePartitionError</tt><big>(</big><em>code</em><big>)</big><a class="headerlink" href="#exception.DeletePartitionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when the Disk delete_partition method fails for the following reasons:</p>
+<ul class="simple">
+<li><em>Invalid partition instance or partition number.</em></li>
+<li><em>Partition is busy.</em></li>
+</ul>
+</dd></dl>
+
+<dl class="exception">
+<dt id="exception.DeviceError">
+<em class="property">exception </em><tt class="descclassname">exception.</tt><tt class="descname">DeviceError</tt><big>(</big><em>code</em><big>)</big><a class="headerlink" href="#exception.DeviceError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a Device class error occurs for the following reasons:</p>
+<ul class="simple">
+<li><em>No device found.</em></li>
+</ul>
+</dd></dl>
+
+<dl class="exception">
+<dt id="exception.DiskCommitError">
+<em class="property">exception </em><tt class="descclassname">exception.</tt><tt class="descname">DiskCommitError</tt><big>(</big><em>code</em><big>)</big><a class="headerlink" href="#exception.DiskCommitError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when the Disk commit method fails for the following reasons:</p>
+<ul class="simple">
+<li><em>Failed to commit to device.</em></li>
+<li><em>Failed to commit to OS.</em></li>
+</ul>
+</dd></dl>
+
+<dl class="exception">
+<dt id="exception.DiskError">
+<em class="property">exception </em><tt class="descclassname">exception.</tt><tt class="descname">DiskError</tt><big>(</big><em>code</em><big>)</big><a class="headerlink" href="#exception.DiskError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a Disk class error occurs for the following reasons:</p>
+<ul class="simple">
+<li><em>Failed to initialize disk.</em></li>
+<li><em>Unsupported disk label.</em></li>
+<li><em>Failed to get disk type.</em></li>
+<li><em>Failed to create new disk.</em></li>
+<li><em>Method unavailable for initialized disk.</em></li>
+</ul>
+</dd></dl>
+
+<dl class="exception">
+<dt id="exception.PartitionError">
+<em class="property">exception </em><tt class="descclassname">exception.</tt><tt class="descname">PartitionError</tt><big>(</big><em>code</em><big>)</big><a class="headerlink" href="#exception.PartitionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a Partition class error occurs for the following reasons:</p>
+<ul class="simple">
+<li><em>Failed to initialize partition.</em></li>
+<li><em>Failed to set partition name to disk.</em></li>
+<li><em>Invalid partition instance or partition number.</em></li>
+<li><em>Invalid partition type.</em></li>
+<li><em>Invalid alignment option.</em></li>
+<li><em>Invalid geometry.</em></li>
+<li><em>Unsupported flag.</em></li>
+</ul>
+</dd></dl>
+
+<dl class="exception">
+<dt id="exception.SizeError">
+<em class="property">exception </em><tt class="descclassname">exception.</tt><tt class="descname">SizeError</tt><big>(</big><em>code</em><big>)</big><a class="headerlink" href="#exception.SizeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when a Size class error occurs for the following reasons:</p>
+<ul class="simple">
+<li><em>Device instance required for this operation.</em></li>
+<li><em>Invalid length type.</em></li>
+</ul>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to reparted&#8217;s documentation!</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="quickstart.html"
+                        title="next chapter">Quickstart</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="Quickstart"
+             >next</a> |</li>
+        <li><a href="#">reparted 1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Ruben Quinones.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

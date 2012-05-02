@@ -1,0 +1,173 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Quickstart &mdash; reparted 1.1 documentation</title>
+    
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="reparted 1.1 documentation" href="index.html" />
+    <link rel="prev" title="Welcome to reparted’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to reparted’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">reparted 1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h1>
+<p>Here is the guide for the impatient:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">reparted</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c"># Initialize a device instance, you can provide the path</span>
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&quot;/dev/sda&quot;</span><span class="p">)</span>
+
+<span class="c"># Or you can let it probe standard devices, it will default to the first</span>
+<span class="c"># one it finds.</span>
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">()</span>
+
+<span class="c"># Initialize our disk.</span>
+<span class="n">myDisk</span> <span class="o">=</span> <span class="n">Disk</span><span class="p">(</span><span class="n">myDevice</span><span class="p">)</span>
+
+<span class="c"># If this is a fresh disk (no partition table set) you can go ahead</span>
+<span class="c"># and set the partition table.</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s">&#39;gpt&#39;</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can test if your disk is set with a partition table like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">myDisk</span><span class="o">.</span><span class="n">type_name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="c"># No partition table, set one</span>
+    <span class="n">myDisk</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s">&#39;gpt&#39;</span><span class="p">)</span>
+    <span class="n">mydisk</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="c"># You can see if your disk has any partitions</span>
+<span class="n">partitions</span> <span class="o">=</span> <span class="n">myDisk</span><span class="o">.</span><span class="n">partitions</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can add partitions, but first you need to set the size:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># sector size defaults to 512</span>
+<span class="n">mySize1</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">)</span>
+
+<span class="c"># manually set the sector size to 1024</span>
+<span class="n">mySize2</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">,</span> <span class="n">sector_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+
+<span class="c"># get the sector size from the device</span>
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&#39;/dev/sda&#39;</span><span class="p">)</span>
+<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">,</span> <span class="n">myDevice</span><span class="p">)</span>
+
+<span class="c"># You can even set a percentage!</span>
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&#39;/dev/sda&#39;</span><span class="p">)</span>
+<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="s">&quot;%&quot;</span><span class="p">,</span> <span class="n">myDevice</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now that you have your size, you can initialize a new partition and add it to disk:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">mySize</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">add_partition</span><span class="p">(</span><span class="n">myPartition</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can also delete partitions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">partition</span> <span class="o">=</span> <span class="n">myDisk</span><span class="o">.</span><span class="n">partitions</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">delete_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or just delete them all:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">myDisk</span><span class="o">.</span><span class="n">delete_all</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Checkout the module reference for more available options.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You must have libparted installed and available from your LD_LIBRARY_PATH</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to reparted&#8217;s documentation!</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/quickstart.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to reparted’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">reparted 1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Ruben Quinones.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
