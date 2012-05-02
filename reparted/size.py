@@ -106,7 +106,8 @@ class Size(object):
         *Args:*
             units (str):    The desired units (ie. "MB", "GB", "%" etc...)
         """
-        return size_units[units] * float(self.sectors)
+        sz = ((float(self.sectors) * self.sector_size) / size_units[units])
+        return sz
 
     def pretty(self, units="MB"):
         """
@@ -115,7 +116,7 @@ class Size(object):
         *Args:*
             units (str):    The desired units (ie. "MB", "GB", "%" etc...)
         """
-        sz = ((float(self.sectors) * self.sector_size) / size_units[units])
+        sz = self.to(units)
         return "%.2f%s" % (sz, units)
 
     def __str__(self):

@@ -13,9 +13,6 @@
 #You should have received a copy of the GNU General Public License
 #along with reparted.  If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['exception', 'conversion', 'size', 'device', 'disk']
-
-from exception import *
-from size import *
-from device import *
-from disk import *
+from .size import Size
+from .device import Device
+from .disk import Disk, Partition
