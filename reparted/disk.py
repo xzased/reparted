@@ -68,6 +68,25 @@ def diskDecorator(error=False):
     return wrap
 
 class Disk(object):
+    """
+    Disk class is used as a wrapper to libparted's ped_disk `.
+    You need to call this class to list, add or delete partitions.
+
+    Args:
+        dev:    A Device class instance.
+
+        disk:   A ped_disk pointer, usually this is used internally.
+
+    Raises:
+        DiskError
+
+    .. note::
+
+       You need to pass either a Device instance or a ped_disk pointer.
+       If a disk is being initialized (no partition table) only the
+       set_label method is available, with other methods returning
+       None or raising DiskError.
+    """
     def __init__(self, device=None, disk=None):
         if device:
             self.__device = device._ped_device
@@ -80,45 +99,79 @@ class Disk(object):
 
     @property
     def _ped_device(self):
+        """
+        Returns the ctypes ped_device pointer.
+        """
         return self.__device
 
     @property
     def _ped_disk(self):
+        """
+        Returns the ctypes ped_disk pointer.
+        """
         return self.__disk
 
     @property
     @diskDecorator()
     def type_name(self):
+        """
+        Returns the disk type (ie. 'gpt' or 'msdos').
+        """
         return self.__disk.contents.type.contents.name
 
     @property
     @diskDecorator()
     def device(self):
+        """
+        Returns the Device the disk belongs to.
+        """
         return self.__device
 
     @property
     @diskDecorator()
     def type_features(self):
+        """
+        Returns the features available (ie. 'EXTENDED' for
+        lvm and 'PARTITION_NAME' for label support.
+        """
         feat = self.__disk.contents.type.contents.features
         return disk_features[feat]
 
     @property
     @diskDecorator()
     def block_sizes(self):
+        """
+        Returns the disk block sizes.
+        """
         return self.__disk.contents.block_sizes
 
     @property
     @diskDecorator()
     def needs_clobber(self):
+        """
+        Returns True if the disk needs clobber.
+        """
         return bool(self.__disk.contents.needs_clobber)
 
     @property
     @diskDecorator()
     def update_mode(self):
+        """
+        Returns True if the disk is set to update mode.
+        """
         return bool(self.__disk.contents.update_mode)
 
     @diskDecorator()
     def partitions(self):
+        """
+        Returns a list of the current disk partitions.
+
+        .. note::
+
+            If the disk is initialized (no partition table) it
+            will return None, if the disk has a partition table
+            but no partitions it will return an empty list.
+        """
         partitions = []
         part = disk_next_partition(self.__disk, None)
         while part:
@@ -132,6 +185,21 @@ class Disk(object):
 
     @diskDecorator(error=True)
     def add_partition(self, part):
+        """
+        Adds a partition to disk. You still need to call commit
+        for the changes to be made to disk.
+
+        Args:
+            part:       A Partition class instance.
+
+        Raises:
+            AddPartitionError
+
+        .. note::
+
+            If the disk is initialized (no partition table) it
+            will raise DiskError.
+        """
         try:
             p = self.get_partition(part.num)
             if p.geom == part.geom:
@@ -172,6 +240,21 @@ class Disk(object):
 
     @diskDecorator(error=True)
     def delete_partition(self, part):
+        """
+        Deletes a partition from disk. Unlike add_partition,
+        this method calls commit, use carefully.
+
+        Args:
+            part:       A Partition class instance.
+
+        Raises:
+            DeletePartitionError, DiskCommitError
+
+        .. note::
+
+            If the disk is initialized (no partition table) it
+            will raise DiskError.
+        """
         if part and isinstance(part, Partition):
             partition = part._Partition__partition
         elif type(part) is int:
@@ -187,11 +270,33 @@ class Disk(object):
 
     @diskDecorator()
     def delete_all(self):
+        """
+        This method deletes all partitions from disk.
+
+        Raises:
+            DiskError, DiskCommitError
+
+        .. note::
+
+            If the disk is initialized (no partition table) it
+            will return None.
+        """
         disk_delete_all(self.__disk)
         return
 
     @diskDecorator(error=True)
     def commit(self):
+        """
+        This method commits partition modifications to disk.
+
+        Raises:
+            DiskError, DiskCommitError
+
+        .. note::
+
+            If the disk is initialized (no partition table) it
+            will return None.
+        """
         to_dev = disk_commit_to_dev(self.__disk)
         if not to_dev:
             raise DiskCommitError(601)
@@ -199,7 +304,6 @@ class Disk(object):
         if not to_os:
             raise DiskCommitError(602)
 
-    @diskDecorator(error=True)
     def _get_ped_partition(self, part_num):
         partition = disk_get_partition(self.__disk, part_num)
         if not bool(partition):
@@ -208,6 +312,20 @@ class Disk(object):
 
     @diskDecorator(error=True)
     def get_partition(self, part_num):
+        """
+        Returns a Partition instance.
+
+        Args:
+            part_num (int):     A partition number.
+
+        Raises:
+            PartitionError
+
+        .. note::
+
+            If the disk is initialized (no partition table) it
+            will raise DiskError.
+        """
         partition = Partition(part=self._get_ped_partition(part_num))
         return partition
 
@@ -222,6 +340,16 @@ class Disk(object):
                 raise DiskError(600)
 
     def set_label(self, label):
+        """
+        Sets the disk partition table ('gpt' or 'msdos)'.
+        This method calls commit to set the label changes.
+
+        Args:
+            label (str):    A partition table type ('gpt' or 'msdos')
+
+        Raises:
+            DiskError
+        """
         if label not in disk_labels:
             raise DiskError(603)
         disk_type = disk_get_type(label)
@@ -238,6 +366,34 @@ class Disk(object):
         self.__disk = disk_new(self.__device)
 
 class Partition(object):
+    """
+    Partition class is used as a wrapper to libparted's ped_partition `.
+    You need can create Partition instances and add them to disk.
+
+    Args:
+        disk:           A Disk class instance.
+        size:           A Size class instance.
+        type (str):     The partition type (ie. 'NORMAL', 'LOGICAL', etc...).
+                        Default is 'NORMAL'.
+        fs (str):       The filesystem type (ie. 'ext3', 'ext4', etc...).
+                        Default is 'ext3'.
+        align (str):    The partition alignment, 'minimal' or 'optimal'.
+                        Default is 'optimal'.
+        name (str):     The partition name.
+        start (int):    The start sector for the partition.
+        end (int):      The end sector for the partition.
+        part:           A ctypes ped_partition pointer.
+
+    Raises:
+        PartitionError
+
+    .. note::
+
+       Name is only available when partition type is 'NORMAL'.
+       The start and end arguments are optional and you should only use them when
+       your want to specify such attributes, otherwise use optimal alignment.
+       The part argument is optional and mostly for internal use.
+    """
     def __init__(self, disk=None, size=None, type='NORMAL', fs='ext3', align='optimal',
                     name='', start=None, end=None, part=None):
         if part:
@@ -267,14 +423,24 @@ class Partition(object):
 
     @property
     def disk(self):
+        """
+        Returns the ctypes ped_disk pointer.
+        """
         return self.__disk
 
     @property
     def device(self):
+        """
+        Returns the Device instance this partition belongs to.
+        """
         return self.disk.device
 
     @property
     def geom(self):
+        """
+        Returns the partition geometry as a 3-tuple:
+            (start, end, length)
+        """
         start =  self.__partition.contents.geom.start
         end =  self.__partition.contents.geom.end
         length =  self.__partition.contents.geom.length
@@ -282,13 +448,22 @@ class Partition(object):
 
     @property
     def num(self):
+        """
+        Returns the partition number.
+        """
         return self.__partition.contents.num
 
     @property
     def type(self):
+        """
+        Returns the partition type.
+        """
         return partition_type[self.__partition.contents.type]
 
     @property
+        """
+        Returns the partition filesystem type.
+        """
     def fs_type(self):
         try:
             fs = self.__partition.contents.fs_type.contents.name
@@ -298,12 +473,25 @@ class Partition(object):
 
     @property
     def name(self):
+        """
+        Returns the partition name if names are supported by disk type,
+        otherwise returns None.
+        """
         if self.disk.type_features != 'PARTITION_NAME':
             return None
         return partition_get_name(self.__partition)
 
     @property
     def alignment(self):
+        """
+        Returns the partition alignment ('optimal' or 'minimal').
+
+        .. note::
+
+            If you specify a 'minimal' alignment when creating a partition
+            but the start sector falls in what would be considered an
+            optimal alignment this method will return 'optimal'.
+        """
         if self.__align:
             return self.__align
         else:
@@ -317,6 +505,16 @@ class Partition(object):
         return None
 
     def set_name(self, name):
+        """
+        Sets the partition name. If the disk type does not support
+        partition names it will raise NotImplementedError.
+
+        Args:
+            name (str):         The partition name.
+
+        Raise:
+            NotImplementedError, PartitionError
+        """
         if self.disk.type_features != 'PARTITION_NAME':
             raise NotImplementedError("The disk does not support partition names.")
         new_name = partition_set_name(self.__partition, name)
@@ -367,5 +565,12 @@ class Partition(object):
             raise PartitionError(710)
 
     def set_flag(self, flag, state):
+        """
+        Sets the partition flag (ie. 'BOOT', 'ROOT', etc...).
+
+        Args:
+            flag (str):         The partition flag.
+            state (bool):       Toggle the flag state (True or False).
+        """
         self._check_flag(flag)
         partition_set_flag(self.__partition, partition_flag[flag], int(state))

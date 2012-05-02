@@ -66,7 +66,28 @@ def device_probe(path):
         return False
 
 class Device(object):
+    """
+    Device class is used as a wrapper to libparted's ped_device `.
+    You need to call this class before calling Disk.
+
+    Args:
+        path (str):     Path to your local device of choice (ie. '/dev/sda').
+        dev:            A ped_device pointer, usually this is used internally.
+
+    Raises:
+        DeviceError
+
+    .. note::
+
+       If called without any parameters it will probe all standard devices
+       and default to the first one it finds.
+
+    """
     def __init__(self, path=None, dev=None):
+        """
+        Initialize Device class, if ped_device pointer is Null it will
+        raise DeviceError.
+        """
         if path:
             self.__device = device_probe(path)
         elif dev:
@@ -78,22 +99,37 @@ class Device(object):
 
     @property
     def _ped_device(self):
+        """
+        Returns the ctypes ped_device pointer.
+        """
         return self.__device
 
     @property
     def length(self):
+        """
+        Returns the length in sectors of the device.
+        """
         return self.__device.contents.length
 
     @property
     def path(self):
+        """
+        Returns the device path (ie. '/dev/sda').
+        """
         return self.__device.contents.path
 
     @property
     def model(self):
+        """
+        Returns the device model (ie. 'ATA VBOX HARDDISK').
+        """
         return self.__device.contents.model
 
     @property
     def type(self):
+        """
+        Returns the device type (ie. 'SCSI').
+        """
         return device_type[self.__device.contents.type]
 
     @property
@@ -102,30 +138,52 @@ class Device(object):
 
     @property
     def phys_sector_size(self):
+        """
+        Returns the physical sector size.
+        """
         return self.__device.contents.phys_sector_size
 
     @property
     def open_count(self):
+        """
+        Returns the number of times the device has been opened.
+        """
         return self.__device.contents.open_count
 
     @property
     def read_only(self):
+        """
+        Returns True if the device is set as read only.
+        """
         return bool(self.__device.contents.read_only)
 
     @property
     def external_mode(self):
+        """
+        Returns True if the device is set to external mode.
+        """
         return bool(self.__device.contents.path)
 
     @property
     def dirty(self):
+        """
+        Returns True if the device is dirty.
+        """
         return bool(self.__device.contents.dirty)
 
     @property
     def boot_dirty(self):
+        """
+        Returns True if the device is set to boot dirty.
+        """
         return bool(self.__device.contents.boot_dirty)
 
     @property
     def hw_geom(self):
+        """
+        Returns the hardware geometry as a 3-tuple:
+            (cylinders, heads, sectors)
+        """
         cylinders = self.__device.contents.hw_geom.cylinders
         heads = self.__device.contents.hw_geom.heads
         sectors = self.__device.contents.hw_geom.sectors
@@ -133,6 +191,10 @@ class Device(object):
 
     @property
     def bios_geom(self):
+        """
+        Returns the bios geometry as a 3-tuple:
+            (cylinders, heads, sectors)
+        """
         cylinders = self.__device.contents.bios_geom.cylinders
         heads = self.__device.contents.bios_geom.heads
         sectors = self.__device.contents.bios_geom.sectors
@@ -140,10 +202,16 @@ class Device(object):
 
     @property
     def host(self):
+        """
+        Returns the device host.
+        """
         return self.__device.contents.host
 
     @property
     def did(self):
+        """
+        Returns the device did.
+        """
         return self.__device.contents.did
 
     def _probe_ped_device(self):
@@ -154,6 +222,10 @@ class Device(object):
         raise DeviceError(500)
 
 def probe_standard_devices():
+    """
+    This function probes all standard devices and returns a list
+    containing instances of Device of the found standard devices.
+    """
     devices = []
     for path in standard_devices:
         dev = device_probe(path)
