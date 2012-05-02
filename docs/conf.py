@@ -187,6 +187,27 @@ latex_documents = [
    u'Ruben Quinones', 'manual'),
 ]
 
+# Mock the existence of C modules (for readthedocs.org documentation builds).
+class Mock(object):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
+    @classmethod
+    def __getattr__(self, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            return type(name, (), {})
+        else:
+            return Mock()
+
+MOCK_MODULES = ['libparted']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = Mock()
+
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
 #latex_logo = None
