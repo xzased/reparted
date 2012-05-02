@@ -67,14 +67,25 @@ def device_probe(path):
 
 class Device(object):
     """
-    Device class is used as a wrapper to libparted's ped_device `.
-    You need to call this class before calling Disk.
+    *Device class is used as a wrapper to libparted's ped_device.*
 
-    Args:
+    You need to call this class before calling Disk. You can create
+    a new instance of Device by specifying a path or let it probe
+    standard devices::
+
+        from reparted import *
+
+        # specify the device path
+        myDevice = Device("/dev/sdb")
+
+        # probe standard devices
+        myDevice2 = Device()
+
+    *Args:*
         path (str):     Path to your local device of choice (ie. '/dev/sda').
         dev:            A ped_device pointer, usually this is used internally.
 
-    Raises:
+    *Raises:*
         DeviceError
 
     .. note::
@@ -182,6 +193,7 @@ class Device(object):
     def hw_geom(self):
         """
         Returns the hardware geometry as a 3-tuple:
+
             (cylinders, heads, sectors)
         """
         cylinders = self.__device.contents.hw_geom.cylinders
@@ -193,6 +205,7 @@ class Device(object):
     def bios_geom(self):
         """
         Returns the bios geometry as a 3-tuple:
+
             (cylinders, heads, sectors)
         """
         cylinders = self.__device.contents.bios_geom.cylinders
@@ -224,7 +237,13 @@ class Device(object):
 def probe_standard_devices():
     """
     This function probes all standard devices and returns a list
-    containing instances of Device of the found standard devices.
+    containing instances of Device of the found standard devices::
+
+        from reparted.device import probe_standard_devices
+
+        probe_standard_devices()
+        [<reparted.device.Device object at 0xb7854d8c>,
+        <reparted.device.Device object at 0xb7607eac>]
     """
     devices = []
     for path in standard_devices:

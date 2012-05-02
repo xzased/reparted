@@ -69,15 +69,22 @@ def diskDecorator(error=False):
 
 class Disk(object):
     """
-    Disk class is used as a wrapper to libparted's ped_disk `.
-    You need to call this class to list, add or delete partitions.
+    *Disk class is used as a wrapper to libparted's ped_disk.*
 
-    Args:
+    You need to call this class to list, add or delete partitions.
+    A new instance of Disk is initialized by passing the Device instance::
+
+        from reparted import *
+
+        myDevice = Device("/dev/sda")
+        myDisk = Disk(myDevice)
+
+    *Args:*
         dev:    A Device class instance.
 
         disk:   A ped_disk pointer, usually this is used internally.
 
-    Raises:
+    *Raises:*
         DiskError
 
     .. note::
@@ -132,7 +139,7 @@ class Disk(object):
     def type_features(self):
         """
         Returns the features available (ie. 'EXTENDED' for
-        lvm and 'PARTITION_NAME' for label support.
+        lvm and 'PARTITION_NAME' for label support).
         """
         feat = self.__disk.contents.type.contents.features
         return disk_features[feat]
@@ -187,12 +194,21 @@ class Disk(object):
     def add_partition(self, part):
         """
         Adds a partition to disk. You still need to call commit
-        for the changes to be made to disk.
+        for the changes to be made to disk::
 
-        Args:
+            from reparted import *
+
+            myDevice = Device("/dev/sdb")
+            myDisk = Disk(myDevice)
+            mySize = Size(4, "GB")
+            myPartition = Partition(myDisk, mySize)
+            myDisk.add_partition(myPartition)
+            myDisk.commit()
+
+        *Args:*
             part:       A Partition class instance.
 
-        Raises:
+        *Raises:*
             AddPartitionError
 
         .. note::
@@ -242,12 +258,25 @@ class Disk(object):
     def delete_partition(self, part):
         """
         Deletes a partition from disk. Unlike add_partition,
-        this method calls commit, use carefully.
+        this method calls commit, use carefully::
 
-        Args:
-            part:       A Partition class instance.
+            from reparted import *
 
-        Raises:
+            myDevice = Device("/dev/sdb")
+            myDisk = Disk(myDevice)
+
+            # Get Partition instance and remove it.
+            part = myDisk.partitions()[0]
+            myDisk.delete_partition(part)
+
+            # Get Partition number and remove it.
+            part = myDisk.partitions()[0].num
+            myDisk.delete_partition(part)
+
+        *Args:*
+            part:   A Partition class instance OR partition number.
+
+        *Raises:*
             DeletePartitionError, DiskCommitError
 
         .. note::
@@ -273,7 +302,7 @@ class Disk(object):
         """
         This method deletes all partitions from disk.
 
-        Raises:
+        *Raises:*
             DiskError, DiskCommitError
 
         .. note::
@@ -289,7 +318,7 @@ class Disk(object):
         """
         This method commits partition modifications to disk.
 
-        Raises:
+        *Raises:*
             DiskError, DiskCommitError
 
         .. note::
@@ -315,10 +344,10 @@ class Disk(object):
         """
         Returns a Partition instance.
 
-        Args:
+        *Args:*
             part_num (int):     A partition number.
 
-        Raises:
+        *Raises:*
             PartitionError
 
         .. note::
@@ -344,10 +373,10 @@ class Disk(object):
         Sets the disk partition table ('gpt' or 'msdos)'.
         This method calls commit to set the label changes.
 
-        Args:
+        *Args:*
             label (str):    A partition table type ('gpt' or 'msdos')
 
-        Raises:
+        *Raises:*
             DiskError
         """
         if label not in disk_labels:
@@ -367,24 +396,39 @@ class Disk(object):
 
 class Partition(object):
     """
-    Partition class is used as a wrapper to libparted's ped_partition `.
-    You need can create Partition instances and add them to disk.
+    *Partition class is used as a wrapper to libparted's ped_partition.*
 
-    Args:
+    You need can create Partition instances and add them to disk. A new
+    Partition instance can be initialized::
+
+        from reparted import *
+
+        myDevice = Device("/dev/sda")
+        myDisk = Disk(myDevice)
+        mySize = Size(4, "GB")
+
+        # Defaults
+        myPartition = Partition(myDisk, mySize)
+
+        # Different filesystem and minimal alignment.
+        myPartition = Partition(myDisk, mySize, fs="ext4", align="minimal")
+
+        # Initialize with a name
+        if myDisk.type_features == 'PARTITION_NAME':
+            myPartition = Partition(myDisk, mySize, name="test")
+
+    *Args:*
         disk:           A Disk class instance.
         size:           A Size class instance.
         type (str):     The partition type (ie. 'NORMAL', 'LOGICAL', etc...).
-                        Default is 'NORMAL'.
         fs (str):       The filesystem type (ie. 'ext3', 'ext4', etc...).
-                        Default is 'ext3'.
         align (str):    The partition alignment, 'minimal' or 'optimal'.
-                        Default is 'optimal'.
         name (str):     The partition name.
         start (int):    The start sector for the partition.
         end (int):      The end sector for the partition.
         part:           A ctypes ped_partition pointer.
 
-    Raises:
+    *Raises:*
         PartitionError
 
     .. note::
@@ -439,6 +483,7 @@ class Partition(object):
     def geom(self):
         """
         Returns the partition geometry as a 3-tuple:
+
             (start, end, length)
         """
         start =  self.__partition.contents.geom.start
@@ -461,10 +506,10 @@ class Partition(object):
         return partition_type[self.__partition.contents.type]
 
     @property
+    def fs_type(self):
         """
         Returns the partition filesystem type.
         """
-    def fs_type(self):
         try:
             fs = self.__partition.contents.fs_type.contents.name
         except ValueError:
@@ -509,10 +554,10 @@ class Partition(object):
         Sets the partition name. If the disk type does not support
         partition names it will raise NotImplementedError.
 
-        Args:
+        *Args:*
             name (str):         The partition name.
 
-        Raise:
+        *Raise:*
             NotImplementedError, PartitionError
         """
         if self.disk.type_features != 'PARTITION_NAME':
@@ -568,7 +613,7 @@ class Partition(object):
         """
         Sets the partition flag (ie. 'BOOT', 'ROOT', etc...).
 
-        Args:
+        *Args:*
             flag (str):         The partition flag.
             state (bool):       Toggle the flag state (True or False).
         """

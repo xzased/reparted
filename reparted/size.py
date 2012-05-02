@@ -38,14 +38,35 @@ size_units = {
 
 class Size(object):
     """
-    Size class is used as a container to specify desired partition sizes`.
+    *Size class is used as a container to specify desired partition sizes.*
+
     You need to call this class before adding Partition instances.
     The default values for units is "MB" and sector_size is set to 512.
-    There is an option to choose percentage "%" as units, in which case
-    you need to pass a Device instance to calculate the sectors needed
-    and length should be between 1 and 100 (ie. Size(25, "%", myDevice)).
+    You can manually specify the sector size or pass the device you intend
+    to use it with and have it obtain the secdtor size from there::
 
-    Args:
+        from reparted import *
+
+        # sector size defaults to 512
+        mySize1 = Size(4, "GB")
+
+        # manually set the sector size to 1024
+        mySize2 = Size(4, "GB", sector_size=1024)
+
+        # get the sector size from the device
+        myDevice = Device('/dev/sda')
+        mySize = Size(4, "GB", myDevice)
+
+    There is an option to choose percentage *'%'* as units, in which case
+    you need to pass a Device instance to calculate the sectors needed
+    and length should be between 1 and 100::
+
+        from reparted import *
+
+        myDevice = Device('/dev/sda')
+        mySize = Size(25, "%", myDevice)
+
+    *Args:*
         length (int):       The desired length.
 
         units (str):        The desired units (ie. "MB", "GB", "%" etc...)
@@ -56,7 +77,7 @@ class Size(object):
                             percents, otherwise calculations will take
                             sector size from Device.sector_size.
 
-    Raises:
+    *Raises:*
         SizeError
 
     .. note::
@@ -82,7 +103,7 @@ class Size(object):
         """
         Returns the size in the specified units.
 
-        Args:
+        *Args:*
             units (str):    The desired units (ie. "MB", "GB", "%" etc...)
         """
         return size_units[units] * float(self.sectors)
@@ -91,7 +112,7 @@ class Size(object):
         """
         Returns the size in the specified units in a pretty string.
 
-        Args:
+        *Args:*
             units (str):    The desired units (ie. "MB", "GB", "%" etc...)
         """
         sz = ((float(self.sectors) * self.sector_size) / size_units[units])
