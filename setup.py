@@ -7,5 +7,6 @@ setup(name='reparted',
       description='Python libparted bindings',
       author='Ruben Quinones',
       author_email='rq.sysadmin@gmail.com',
+      url='http://github.com/xzased/reparted',
       packages=['reparted'],
      )
