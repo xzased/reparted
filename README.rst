@@ -5,7 +5,8 @@ Reparted is my attempt at learning python ctypes module to create bindings for c
 at your own risk. I was a bit confused on the way parted and pyparted interface works, my aim was
 to create a simple interface. It does not have the full set of features parted has to offer, only
 enough to create and delete partitions and set the labels. It has been tested using python 2.7 and
-libparted 3.0. Feel free to check the code and point out enhancements. For any questions my email is rq.sysadmin@gmail.com, have fun!
+libparted 3.0. Feel free to check the code and point out enhancements.
+For any questions my email is rq.sysadmin@gmail.com, have fun!
 
 
 Downloads
@@ -39,3 +40,17 @@ You can view the documentation and quickstart guide here:
     http://xzased.github.com/reparted
 
 
+1.1 Release Notes
+=================
+
+**Bug Fixes**
+
+*       *No error was raised when calling Device with an invalid path.*
+*       *Calculations in **to** method from Size class were wrong.*
+*       *Reparted would segfault when initializing a fresh disk and call certain disk methods.*
+
+
+**Additions**
+
+*       *Custom exceptions.*
+*       *Nice documentation.*
