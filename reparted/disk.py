@@ -58,9 +58,9 @@ partition_flag = {
 
 def diskDecorator(error=False):
     def wrap(fn):
-        def wrapped(self):
+        def wrapped(self, *args, **kwargs):
             if bool(self._ped_disk):
-                return fn(self)
+                return fn(self, *args, **kwargs)
             if error:
                 raise DiskError(606)
             return None
