@@ -90,11 +90,11 @@
 
 <span class="c"># get the sector size from the device</span>
 <span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&#39;/dev/sda&#39;</span><span class="p">)</span>
-<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">,</span> <span class="n">myDevice</span><span class="p">)</span>
+<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="o">=</span><span class="n">myDevice</span><span class="p">)</span>
 
 <span class="c"># You can even set a percentage!</span>
 <span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&#39;/dev/sda&#39;</span><span class="p">)</span>
-<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="s">&quot;%&quot;</span><span class="p">,</span> <span class="n">myDevice</span><span class="p">)</span>
+<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="s">&quot;%&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="o">=</span><span class="n">myDevice</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now that you have your size, you can initialize a new partition and add it to disk:</p>

@@ -215,7 +215,7 @@ to use it with and have it obtain the secdtor size from there:</p>
 
 <span class="c"># get the sector size from the device</span>
 <span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&#39;/dev/sda&#39;</span><span class="p">)</span>
-<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">,</span> <span class="n">myDevice</span><span class="p">)</span>
+<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="o">=</span><span class="n">myDevice</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>There is an option to choose percentage <em>&#8216;%&#8217;</em> as units, in which case
@@ -224,7 +224,7 @@ and length should be between 1 and 100:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">reparted</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&#39;/dev/sda&#39;</span><span class="p">)</span>
-<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="s">&quot;%&quot;</span><span class="p">,</span> <span class="n">myDevice</span><span class="p">)</span>
+<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="s">&quot;%&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="o">=</span><span class="n">myDevice</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="docutils">
