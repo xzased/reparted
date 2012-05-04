@@ -296,6 +296,143 @@ set_label method is available, with other methods returning
 None or raising DiskError.</p>
 </div>
 <dl class="method">
+<dt id="disk.Disk.add_partition">
+<tt class="descname">add_partition</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#disk.Disk.add_partition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a partition to disk. You still need to call commit
+for the changes to be made to disk:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">reparted</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&quot;/dev/sdb&quot;</span><span class="p">)</span>
+<span class="n">myDisk</span> <span class="o">=</span> <span class="n">Disk</span><span class="p">(</span><span class="n">myDevice</span><span class="p">)</span>
+<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">)</span>
+<span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">mySize</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">add_partition</span><span class="p">(</span><span class="n">myPartition</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd>part:       A Partition class instance.</dd>
+<dt><em>Raises:</em></dt>
+<dd>AddPartitionError</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the disk is initialized (no partition table) it
+will raise DiskError.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Disk.block_sizes">
+<tt class="descname">block_sizes</tt><a class="headerlink" href="#disk.Disk.block_sizes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the disk block sizes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="disk.Disk.commit">
+<tt class="descname">commit</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#disk.Disk.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method commits partition modifications to disk.</p>
+<dl class="docutils">
+<dt><em>Raises:</em></dt>
+<dd>DiskError, DiskCommitError</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the disk is initialized (no partition table) it
+will return None.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="disk.Disk.delete_all">
+<tt class="descname">delete_all</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#disk.Disk.delete_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method deletes all partitions from disk.</p>
+<dl class="docutils">
+<dt><em>Raises:</em></dt>
+<dd>DiskError, DiskCommitError</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the disk is initialized (no partition table) it
+will return None.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="disk.Disk.delete_partition">
+<tt class="descname">delete_partition</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#disk.Disk.delete_partition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a partition from disk. Unlike add_partition,
+this method calls commit, use carefully:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">reparted</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&quot;/dev/sdb&quot;</span><span class="p">)</span>
+<span class="n">myDisk</span> <span class="o">=</span> <span class="n">Disk</span><span class="p">(</span><span class="n">myDevice</span><span class="p">)</span>
+
+<span class="c"># Get Partition instance and remove it.</span>
+<span class="n">part</span> <span class="o">=</span> <span class="n">myDisk</span><span class="o">.</span><span class="n">partitions</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">delete_partition</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+
+<span class="c"># Get Partition number and remove it.</span>
+<span class="n">part</span> <span class="o">=</span> <span class="n">myDisk</span><span class="o">.</span><span class="n">partitions</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">num</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">delete_partition</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd>part:   A Partition class instance OR partition number.</dd>
+<dt><em>Raises:</em></dt>
+<dd>DeletePartitionError, DiskCommitError</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the disk is initialized (no partition table) it
+will raise DiskError.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Disk.device">
+<tt class="descname">device</tt><a class="headerlink" href="#disk.Disk.device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the Device the disk belongs to.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="disk.Disk.get_partition">
+<tt class="descname">get_partition</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#disk.Disk.get_partition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Partition instance.</p>
+<dl class="docutils">
+<dt><em>Args:</em></dt>
+<dd>part_num (int):     A partition number.</dd>
+<dt><em>Raises:</em></dt>
+<dd>PartitionError</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the disk is initialized (no partition table) it
+will raise DiskError.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Disk.needs_clobber">
+<tt class="descname">needs_clobber</tt><a class="headerlink" href="#disk.Disk.needs_clobber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the disk needs clobber.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="disk.Disk.partitions">
+<tt class="descname">partitions</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#disk.Disk.partitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of the current disk partitions.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the disk is initialized (no partition table) it
+will return None, if the disk has a partition table
+but no partitions it will return an empty list.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="disk.Disk.set_label">
 <tt class="descname">set_label</tt><big>(</big><em>label</em><big>)</big><a class="headerlink" href="#disk.Disk.set_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the disk partition table (&#8216;gpt&#8217; or &#8216;msdos)&#8217;.
@@ -306,6 +443,25 @@ This method calls commit to set the label changes.</p>
 <dt><em>Raises:</em></dt>
 <dd>DiskError</dd>
 </dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Disk.type_features">
+<tt class="descname">type_features</tt><a class="headerlink" href="#disk.Disk.type_features" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the features available (ie. &#8216;EXTENDED&#8217; for
+lvm and &#8216;PARTITION_NAME&#8217; for label support).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Disk.type_name">
+<tt class="descname">type_name</tt><a class="headerlink" href="#disk.Disk.type_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the disk type (ie. &#8216;gpt&#8217; or &#8216;msdos&#8217;).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="disk.Disk.update_mode">
+<tt class="descname">update_mode</tt><a class="headerlink" href="#disk.Disk.update_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the disk is set to update mode.</p>
 </dd></dl>
 
 </dd></dl>
@@ -435,6 +591,13 @@ partition names it will raise NotImplementedError.</p>
 <dd><p>Returns the partition type.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="disk.diskDecorator">
+<tt class="descclassname">disk.</tt><tt class="descname">diskDecorator</tt><big>(</big><em>error=False</em><big>)</big><a class="headerlink" href="#disk.diskDecorator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wraps disk methods to check if the instance of
+Disk points to a initialized disk.</p>
 </dd></dl>
 
 <span class="target" id="module-exception"></span><dl class="exception">
