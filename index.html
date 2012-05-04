@@ -82,13 +82,15 @@ standard devices:</p>
 <span class="n">myDevice2</span> <span class="o">=</span> <span class="n">Device</span><span class="p">()</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd>path (str):     Path to your local device of choice (ie. &#8216;/dev/sda&#8217;).
-dev:            A ped_device pointer, usually this is used internally.</dd>
-<dt><em>Raises:</em></dt>
-<dd>DeviceError</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>path (str):     Path to your local device of choice (ie. &#8216;/dev/sda&#8217;).</li>
+<li>dev:            A ped_device pointer, usually this is used internally.</li>
+</ul>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>DeviceError</li>
+</ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If called without any parameters it will probe all standard devices
@@ -227,20 +229,17 @@ and length should be between 1 and 100:</p>
 <span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="s">&quot;%&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="o">=</span><span class="n">myDevice</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd><p class="first">length (int):       The desired length.</p>
-<p>units (str):        The desired units (ie. &#8220;MB&#8221;, &#8220;GB&#8221;, &#8220;%&#8221; etc...)</p>
-<p>sector_size (int):  The sector size to be used to calculate.</p>
-<dl class="last docutils">
-<dt>dev:                A Device instance. Only needed when using</dt>
-<dd>percents, otherwise calculations will take
-sector size from Device.sector_size.</dd>
-</dl>
-</dd>
-<dt><em>Raises:</em></dt>
-<dd>SizeError</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>length (int):       The desired length.</li>
+<li>units (str):        The desired units (ie. &#8220;MB&#8221;, &#8220;GB&#8221;, &#8220;%&#8221; etc...)</li>
+<li>sector_size (int):  The sector size to be used to calculate.</li>
+<li>dev:                A Device instance. Only needed when using                             percents, otherwise calculations will take                             sector size from Device.sector_size.</li>
+</ul>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>SizeError</li>
+</ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">When using percent as unit and using the Size instance for multiple
@@ -250,20 +249,20 @@ disks make sure they all have the same sector size.</p>
 <dt id="size.Size.pretty">
 <tt class="descname">pretty</tt><big>(</big><em>units='MB'</em><big>)</big><a class="headerlink" href="#size.Size.pretty" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the size in the specified units in a pretty string.</p>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd>units (str):    The desired units (ie. &#8220;MB&#8221;, &#8220;GB&#8221;, &#8220;%&#8221; etc...)</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>units (str):    The desired units (ie. &#8220;MB&#8221;, &#8220;GB&#8221;, &#8220;%&#8221; etc...)</li>
+</ul>
 </dd></dl>
 
 <dl class="method">
 <dt id="size.Size.to">
 <tt class="descname">to</tt><big>(</big><em>units</em><big>)</big><a class="headerlink" href="#size.Size.to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the size in the specified units.</p>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd>units (str):    The desired units (ie. &#8220;MB&#8221;, &#8220;GB&#8221;, &#8220;%&#8221; etc...)</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>units (str):    The desired units (ie. &#8220;MB&#8221;, &#8220;GB&#8221;, &#8220;%&#8221; etc...)</li>
+</ul>
 </dd></dl>
 
 </dd></dl>
@@ -280,14 +279,15 @@ A new instance of Disk is initialized by passing the Device instance:</p>
 <span class="n">myDisk</span> <span class="o">=</span> <span class="n">Disk</span><span class="p">(</span><span class="n">myDevice</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd><p class="first">dev:    A Device class instance.</p>
-<p class="last">disk:   A ped_disk pointer, usually this is used internally.</p>
-</dd>
-<dt><em>Raises:</em></dt>
-<dd>DiskError</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>dev:    A Device class instance.</li>
+<li>disk:   A ped_disk pointer, usually this is used internally.</li>
+</ul>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>DiskError</li>
+</ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">You need to pass either a Device instance or a ped_disk pointer.
@@ -310,12 +310,14 @@ for the changes to be made to disk:</p>
 <span class="n">myDisk</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd>part:       A Partition class instance.</dd>
-<dt><em>Raises:</em></dt>
-<dd>AddPartitionError</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>part:       A Partition class instance.</li>
+</ul>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>AddPartitionError</li>
+</ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If the disk is initialized (no partition table) it
@@ -333,10 +335,10 @@ will raise DiskError.</p>
 <dt id="disk.Disk.commit">
 <tt class="descname">commit</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#disk.Disk.commit" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method commits partition modifications to disk.</p>
-<dl class="docutils">
-<dt><em>Raises:</em></dt>
-<dd>DiskError, DiskCommitError</dd>
-</dl>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>DiskError, DiskCommitError</li>
+</ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If the disk is initialized (no partition table) it
@@ -348,10 +350,10 @@ will return None.</p>
 <dt id="disk.Disk.delete_all">
 <tt class="descname">delete_all</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#disk.Disk.delete_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method deletes all partitions from disk.</p>
-<dl class="docutils">
-<dt><em>Raises:</em></dt>
-<dd>DiskError, DiskCommitError</dd>
-</dl>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>DiskError, DiskCommitError</li>
+</ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If the disk is initialized (no partition table) it
@@ -378,12 +380,14 @@ this method calls commit, use carefully:</p>
 <span class="n">myDisk</span><span class="o">.</span><span class="n">delete_partition</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd>part:   A Partition class instance OR partition number.</dd>
-<dt><em>Raises:</em></dt>
-<dd>DeletePartitionError, DiskCommitError</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>part:   A Partition class instance OR partition number.</li>
+</ul>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>DeletePartitionError, DiskCommitError</li>
+</ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If the disk is initialized (no partition table) it
@@ -401,12 +405,14 @@ will raise DiskError.</p>
 <dt id="disk.Disk.get_partition">
 <tt class="descname">get_partition</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#disk.Disk.get_partition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a Partition instance.</p>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd>part_num (int):     A partition number.</dd>
-<dt><em>Raises:</em></dt>
-<dd>PartitionError</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>part_num (int):     A partition number.</li>
+</ul>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>PartitionError</li>
+</ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If the disk is initialized (no partition table) it
@@ -437,12 +443,14 @@ but no partitions it will return an empty list.</p>
 <tt class="descname">set_label</tt><big>(</big><em>label</em><big>)</big><a class="headerlink" href="#disk.Disk.set_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the disk partition table (&#8216;gpt&#8217; or &#8216;msdos)&#8217;.
 This method calls commit to set the label changes.</p>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd>label (str):    A partition table type (&#8216;gpt&#8217; or &#8216;msdos&#8217;)</dd>
-<dt><em>Raises:</em></dt>
-<dd>DiskError</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>label (str):    A partition table type (&#8216;gpt&#8217; or &#8216;msdos&#8217;)</li>
+</ul>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>DiskError</li>
+</ul>
 </dd></dl>
 
 <dl class="attribute">
@@ -489,20 +497,22 @@ Partition instance can be initialized:</p>
     <span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">mySize</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd>disk:           A Disk class instance.
-size:           A Size class instance.
-type (str):     The partition type (ie. &#8216;NORMAL&#8217;, &#8216;LOGICAL&#8217;, etc...).
-fs (str):       The filesystem type (ie. &#8216;ext3&#8217;, &#8216;ext4&#8217;, etc...).
-align (str):    The partition alignment, &#8216;minimal&#8217; or &#8216;optimal&#8217;.
-name (str):     The partition name.
-start (int):    The start sector for the partition.
-end (int):      The end sector for the partition.
-part:           A ctypes ped_partition pointer.</dd>
-<dt><em>Raises:</em></dt>
-<dd>PartitionError</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>disk:           A Disk class instance.</li>
+<li>size:           A Size class instance.</li>
+<li>type (str):     The partition type (ie. &#8216;NORMAL&#8217;, &#8216;LOGICAL&#8217;, etc...).</li>
+<li>fs (str):       The filesystem type (ie. &#8216;ext3&#8217;, &#8216;ext4&#8217;, etc...).</li>
+<li>align (str):    The partition alignment, &#8216;minimal&#8217; or &#8216;optimal&#8217;.</li>
+<li>name (str):     The partition name.</li>
+<li>start (int):    The start sector for the partition.</li>
+<li>end (int):      The end sector for the partition.</li>
+<li>part:           A ctypes ped_partition pointer.</li>
+</ul>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>PartitionError</li>
+</ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Name is only available when partition type is &#8216;NORMAL&#8217;.
@@ -565,11 +575,11 @@ otherwise returns None.</p>
 <dt id="disk.Partition.set_flag">
 <tt class="descname">set_flag</tt><big>(</big><em>flag</em>, <em>state</em><big>)</big><a class="headerlink" href="#disk.Partition.set_flag" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the partition flag (ie. &#8216;BOOT&#8217;, &#8216;ROOT&#8217;, etc...).</p>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd>flag (str):         The partition flag.
-state (bool):       Toggle the flag state (True or False).</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>flag (str):         The partition flag.</li>
+<li>state (bool):       Toggle the flag state (True or False).</li>
+</ul>
 </dd></dl>
 
 <dl class="method">
@@ -577,12 +587,14 @@ state (bool):       Toggle the flag state (True or False).</dd>
 <tt class="descname">set_name</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#disk.Partition.set_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the partition name. If the disk type does not support
 partition names it will raise NotImplementedError.</p>
-<dl class="docutils">
-<dt><em>Args:</em></dt>
-<dd>name (str):         The partition name.</dd>
-<dt><em>Raise:</em></dt>
-<dd>NotImplementedError, PartitionError</dd>
-</dl>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>name (str):         The partition name.</li>
+</ul>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>NotImplementedError, PartitionError</li>
+</ul>
 </dd></dl>
 
 <dl class="attribute">
