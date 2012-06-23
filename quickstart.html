@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Quickstart &mdash; reparted 1.1 documentation</title>
+    <title>Quickstart &mdash; reparted 1.2 documentation</title>
     
     <link rel="stylesheet" href="static/default.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.1',
+        VERSION:     '1.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="reparted 1.1 documentation" href="index.html" />
+    <link rel="top" title="reparted 1.2 documentation" href="index.html" />
     <link rel="prev" title="Welcome to reparted’s documentation!" href="index.html" /> 
   </head>
   <body>
@@ -41,7 +41,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to reparted’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">reparted 1.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">reparted 1.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -100,6 +100,31 @@
 <p>Now that you have your size, you can initialize a new partition and add it to disk:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">mySize</span><span class="p">)</span>
 <span class="n">myDisk</span><span class="o">.</span><span class="n">add_partition</span><span class="p">(</span><span class="n">myPartition</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Unless you specify a starting sector for a new partition, reparted will always search
+for the largest free space available and set the beginning of that area as the starting
+sector for new partitions.</p>
+</div>
+<p>Want to fill a new partition with whatever is free on disk? No hay problema:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">freeSize</span> <span class="o">=</span> <span class="n">myDisk</span><span class="o">.</span><span class="n">usable_free_space</span>
+<span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">freeSize</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">add_partition</span><span class="p">(</span><span class="n">myPartition</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now what about ms-dos disks and extended partitions?:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">myDisk</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s">&#39;msdos&#39;</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="n">freeSize</span> <span class="o">=</span> <span class="n">myDisk</span><span class="o">.</span><span class="n">usable_free_space</span>
+<span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">freeSize</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s">&quot;EXTENDED&quot;</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">add_partition</span><span class="p">(</span><span class="n">myPartition</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+<span class="n">logical</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">Size</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">),</span> <span class="nb">type</span><span class="o">=</span><span class="s">&quot;LOGICAL&quot;</span><span class="p">)</span>
+<span class="n">myDisk</span><span class="o">.</span><span class="n">add_partition</span><span class="p">(</span><span class="n">logical</span><span class="p">)</span>
 <span class="n">myDisk</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -162,7 +187,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to reparted’s documentation!"
              >previous</a> |</li>
-        <li><a href="index.html">reparted 1.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">reparted 1.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
