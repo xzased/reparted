@@ -14,7 +14,8 @@
 #along with reparted.  If not, see <http://www.gnu.org/licenses/>.
 
 from conversion import *
-from disk import *
+from size import *
+from disk import Disk
 from exception import DeviceError
 import os
 
@@ -82,11 +83,13 @@ class Device(object):
         myDevice2 = Device()
 
     *Args:*
-        path (str):     Path to your local device of choice (ie. '/dev/sda').
-        dev:            A ped_device pointer, usually this is used internally.
+
+    *   path (str):     Path to your local device of choice (ie. '/dev/sda').
+    *   dev:            A ped_device pointer, usually this is used internally.
 
     *Raises:*
-        DeviceError
+
+    *   DeviceError
 
     .. note::
 
@@ -100,94 +103,97 @@ class Device(object):
         raise DeviceError.
         """
         if path:
-            self.__device = device_probe(path)
+            self._device = device_probe(path)
         elif dev:
-            self.__device = dev
+            self._device = dev
         else:
-            self.__device = self._probe_ped_device()
-        if not bool(self.__device):
+            self._device = self._probe_ped_device()
+        if not bool(self._device):
             raise DeviceError(500)
+        length = self.length * self.sector_size
+        size = Size(length=length, units="B", dev=self)
+        self._size = size
 
     @property
     def _ped_device(self):
         """
         Returns the ctypes ped_device pointer.
         """
-        return self.__device
+        return self._device
 
     @property
     def length(self):
         """
         Returns the length in sectors of the device.
         """
-        return self.__device.contents.length
+        return self._ped_device.contents.length
 
     @property
     def path(self):
         """
         Returns the device path (ie. '/dev/sda').
         """
-        return self.__device.contents.path
+        return self._ped_device.contents.path
 
     @property
     def model(self):
         """
         Returns the device model (ie. 'ATA VBOX HARDDISK').
         """
-        return self.__device.contents.model
+        return self._ped_device.contents.model
 
     @property
     def type(self):
         """
         Returns the device type (ie. 'SCSI').
         """
-        return device_type[self.__device.contents.type]
+        return device_type[self._ped_device.contents.type]
 
     @property
     def sector_size(self):
-        return self.__device.contents.sector_size
+        return self._ped_device.contents.sector_size
 
     @property
     def phys_sector_size(self):
         """
         Returns the physical sector size.
         """
-        return self.__device.contents.phys_sector_size
+        return self._ped_device.contents.phys_sector_size
 
     @property
     def open_count(self):
         """
         Returns the number of times the device has been opened.
         """
-        return self.__device.contents.open_count
+        return self._ped_device.contents.open_count
 
     @property
     def read_only(self):
         """
         Returns True if the device is set as read only.
         """
-        return bool(self.__device.contents.read_only)
+        return bool(self._ped_device.contents.read_only)
 
     @property
     def external_mode(self):
         """
         Returns True if the device is set to external mode.
         """
-        return bool(self.__device.contents.path)
+        return bool(self._ped_device.contents.path)
 
     @property
     def dirty(self):
         """
         Returns True if the device is dirty.
         """
-        return bool(self.__device.contents.dirty)
+        return bool(self._ped_device.contents.dirty)
 
     @property
     def boot_dirty(self):
         """
         Returns True if the device is set to boot dirty.
         """
-        return bool(self.__device.contents.boot_dirty)
+        return bool(self._ped_device.contents.boot_dirty)
 
     @property
     def hw_geom(self):
@@ -196,9 +202,9 @@ class Device(object):
 
             (cylinders, heads, sectors)
         """
-        cylinders = self.__device.contents.hw_geom.cylinders
-        heads = self.__device.contents.hw_geom.heads
-        sectors = self.__device.contents.hw_geom.sectors
+        cylinders = self._ped_device.contents.hw_geom.cylinders
+        heads = self._ped_device.contents.hw_geom.heads
+        sectors = self._ped_device.contents.hw_geom.sectors
         return (cylinders, heads, sectors)
 
     @property
@@ -208,9 +214,9 @@ class Device(object):
 
             (cylinders, heads, sectors)
         """
-        cylinders = self.__device.contents.bios_geom.cylinders
-        heads = self.__device.contents.bios_geom.heads
-        sectors = self.__device.contents.bios_geom.sectors
+        cylinders = self._ped_device.contents.bios_geom.cylinders
+        heads = self._ped_device.contents.bios_geom.heads
+        sectors = self._ped_device.contents.bios_geom.sectors
         return (cylinders, heads, sectors)
 
     @property
@@ -218,14 +224,21 @@ class Device(object):
         """
         Returns the device host.
         """
-        return self.__device.contents.host
+        return self._ped_device.contents.host
 
     @property
     def did(self):
         """
         Returns the device did.
         """
-        return self.__device.contents.did
+        return self._ped_device.contents.did
+
+    @property
+    def size(self):
+        """
+        Returns the size as a Size class instance.
+        """
+        return self._size
 
     def _probe_ped_device(self):
         for path in standard_devices:

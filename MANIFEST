@@ -7,3 +7,4 @@ reparted/conversion.py
 reparted/device.py
 reparted/disk.py
 reparted/size.py
+graft docs/html/

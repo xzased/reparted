@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='reparted',
-      version='1.1',
+      version='1.2',
       description='Python libparted bindings',
       author='Ruben Quinones',
       author_email='rq.sysadmin@gmail.com',

@@ -40,6 +40,10 @@ partition_error_code = {
     708: "Invalid alignment option.",
     709: "Invalid geometry.",
     710: "Unsupported flag.",
+    711: "Partition type not supported by disk.",
+    712: "Partition is outside disk.",
+    713: "No extended partition found on disk.",
+    714: "Only one extended partition is allowed per disk."
 }
 
 class SizeError(RepartedError):

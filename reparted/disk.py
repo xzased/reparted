@@ -15,6 +15,9 @@
 
 from conversion import *
 from exception import *
+from size import Size
+from partition import Partition
+from functools import wraps
 import os
 
 disk_features = {
@@ -29,35 +32,13 @@ disk_labels = [
 
 alignment_any = PedAlignment(0, 1)
 
-partition_type = {
-    0 : 'NORMAL',
-    1 : 'LOGICAL',
-    2 : 'EXTENDED',
-    4 : 'FREESPACE',
-    8 : 'METADATA',
-    10 : 'PROTECTED'
-}
-
-partition_flag = {
-    "BOOT" : 1,
-    "ROOT" : 2,
-    "SWAP" : 3,
-    "HIDDEN" : 4,
-    "RAID" : 5,
-    "LVM" : 6,
-    "LBA" : 7,
-    "HPSERVICE" : 8,
-    "PALO" : 9,
-    "PREP" : 10,
-    "MSFT_RESERVED" : 11,
-    "BIOS_GRUB" : 12,
-    "APPLE_TV_RECOVERY" : 13,
-    "DIAG" : 14,
-    "LEGACY_BOOT" : 15
-}
-
 def diskDecorator(error=False):
+    """
+    Wraps disk methods to check if the instance of
+    Disk points to a initialized disk.
+    """
     def wrap(fn):
+        @wraps(fn)
         def wrapped(self, *args, **kwargs):
             if bool(self._ped_disk):
                 return fn(self, *args, **kwargs)
@@ -80,12 +61,13 @@ class Disk(object):
         myDisk = Disk(myDevice)
 
     *Args:*
-        dev:    A Device class instance.
 
-        disk:   A ped_disk pointer, usually this is used internally.
+    *   dev:    A Device class instance.
+    *   disk:   A ped_disk pointer, usually this is used internally.
 
     *Raises:*
-        DiskError
+
+    *   DiskError
 
     .. note::
 
@@ -94,29 +76,28 @@ class Disk(object):
        set_label method is available, with other methods returning
        None or raising DiskError.
     """
-    def __init__(self, device=None, disk=None):
-        if device:
-            self.__device = device._ped_device
-            self.__disk = disk_new(self.__device)
-        elif disk:
-            self.__disk = disk
-            self.__device = self.__disk.contents.dev
+    def __init__(self, device, disk=None):
+        self._device = device
+        if disk:
+            self._disk = disk
         else:
-            raise DiskError(600)
+            self._disk = disk_new(device._ped_device)
+            if not bool(self._disk):
+                raise DiskError(600)
 
     @property
     def _ped_device(self):
         """
         Returns the ctypes ped_device pointer.
         """
-        return self.__device
+        return self._device._ped_device
 
     @property
     def _ped_disk(self):
         """
         Returns the ctypes ped_disk pointer.
         """
-        return self.__disk
+        return self._disk
 
     @property
     @diskDecorator()
@@ -124,7 +105,7 @@ class Disk(object):
         """
         Returns the disk type (ie. 'gpt' or 'msdos').
         """
-        return self.__disk.contents.type.contents.name
+        return self._ped_disk.contents.type.contents.name
 
     @property
     @diskDecorator()
@@ -132,7 +113,7 @@ class Disk(object):
         """
         Returns the Device the disk belongs to.
         """
-        return self.__device
+        return self._device
 
     @property
     @diskDecorator()
@@ -141,7 +122,7 @@ class Disk(object):
         Returns the features available (ie. 'EXTENDED' for
         lvm and 'PARTITION_NAME' for label support).
         """
-        feat = self.__disk.contents.type.contents.features
+        feat = self._ped_disk.contents.type.contents.features
         return disk_features[feat]
 
     @property
@@ -150,7 +131,7 @@ class Disk(object):
         """
         Returns the disk block sizes.
         """
-        return self.__disk.contents.block_sizes
+        return self._ped_disk.contents.block_sizes
 
     @property
     @diskDecorator()
@@ -158,7 +139,7 @@ class Disk(object):
         """
         Returns True if the disk needs clobber.
         """
-        return bool(self.__disk.contents.needs_clobber)
+        return bool(self._ped_disk.contents.needs_clobber)
 
     @property
     @diskDecorator()
@@ -166,7 +147,60 @@ class Disk(object):
         """
         Returns True if the disk is set to update mode.
         """
-        return bool(self.__disk.contents.update_mode)
+        return bool(self._ped_disk.contents.update_mode)
+
+    @property
+    @diskDecorator()
+    def total_free_space(self):
+        """
+        Returns the total free space size as a Size class instance.
+        """
+        size = Size()
+        for part in self.free_partitions():
+            size += part.size
+        return size
+
+    @property
+    @diskDecorator()
+    def usable_free_space(self):
+        """
+        Returns the largest free space size as a Size class instance.
+        """
+        size = Size()
+        for part in self.free_partitions():
+            if part.size > size:
+                size = part.size
+        return size
+
+    @property
+    @diskDecorator()
+    def size(self):
+        """
+        Returns the size as a Size class instance.
+        """
+        return self.device.size
+
+    @diskDecorator()
+    def free_partitions(self):
+        """
+        Returns a list of the current free space allocations as Partition
+        instances.
+
+        .. note::
+
+            If the disk is initialized (no partition table) it
+            will return None.
+        """
+        partitions = []
+        part = disk_next_partition(self._ped_disk, None)
+        while part:
+            if part.contents.type != 4:
+                part = disk_next_partition(self._ped_disk, part)
+                continue
+            p = Partition(disk=self, part=part)
+            partitions.append(p)
+            part = disk_next_partition(self._ped_disk, part)
+        return partitions
 
     @diskDecorator()
     def partitions(self):
@@ -180,14 +214,14 @@ class Disk(object):
             but no partitions it will return an empty list.
         """
         partitions = []
-        part = disk_next_partition(self.__disk, None)
+        part = disk_next_partition(self._ped_disk, None)
         while part:
             if part.contents.type > 2:
-                part = disk_next_partition(self.__disk, part)
+                part = disk_next_partition(self._ped_disk, part)
                 continue
-            p = Partition(part=part)
+            p = Partition(disk=self, part=part)
             partitions.append(p)
-            part = disk_next_partition(self.__disk, part)
+            part = disk_next_partition(self._ped_disk, part)
         return partitions
 
     @diskDecorator(error=True)
@@ -206,10 +240,12 @@ class Disk(object):
             myDisk.commit()
 
         *Args:*
-            part:       A Partition class instance.
+
+        *       part:       A Partition class instance.
 
         *Raises:*
-            AddPartitionError
+
+        *       AddPartitionError
 
         .. note::
 
@@ -222,20 +258,20 @@ class Disk(object):
                 raise AddPartitionError(701)
         except ValueError:
             pass
-        partition = part._Partition__partition
-        disk = self.__disk
+        partition = part._partition
         start, end, length = part.geom
-        range_start = geometry_new(self.__device, start, 1)
-        range_end = geometry_new(self.__device, end, 1)
-        user_constraint = constraint_new(alignment_any, alignment_any, range_start, range_end, 1, disk.contents.dev.contents.length)
+        range_start = geometry_new(self._ped_device, start, 1)
+        range_end = geometry_new(self._ped_device, end, 1)
+        user_constraint = constraint_new(alignment_any, alignment_any, range_start,
+                                        range_end, 1, self._ped_device.contents.length)
         if not bool(user_constraint):
             raise AddPartitionError(702)
         if part.alignment == 'optimal':
-            dev_constraint = device_get_optimal_aligned_constraint(self.__device)
+            dev_constraint = device_get_optimal_aligned_constraint(self._ped_device)
         elif part.alignment == 'minimal':
-            dev_constraint = device_get_minimal_aligned_constraint(self.__device)
+            dev_constraint = device_get_minimal_aligned_constraint(self._ped_device)
         else:
-            dev_constraint = device_get_constraint(self.__device)
+            dev_constraint = device_get_constraint(self._ped_device)
         if not bool(dev_constraint):
             raise AddPartitionError(702)
         final_constraint = constraint_intersect(user_constraint, dev_constraint)
@@ -243,15 +279,15 @@ class Disk(object):
         constraint_destroy(dev_constraint)
         if not bool(final_constraint):
             raise AddPartitionError(703)
-        added = disk_add_partition(disk, partition, final_constraint)
+        added = disk_add_partition(self._ped_disk, partition, final_constraint)
         constraint_destroy(final_constraint)
         if not added:
-            disk_remove_partition(disk, partition)
+            disk_remove_partition(self._ped_disk, partition)
             raise AddPartitionError(701)
         if part.name:
             set_name = partition_set_name(partition, part.name)
             if not set_name:
-                disk_remove_partition(disk, partition)
+                disk_remove_partition(self._ped_disk, partition)
                 raise AddPartitionError(704)
 
     @diskDecorator(error=True)
@@ -274,10 +310,12 @@ class Disk(object):
             myDisk.delete_partition(part)
 
         *Args:*
-            part:   A Partition class instance OR partition number.
+
+        *       part:   A Partition class instance OR partition number.
 
         *Raises:*
-            DeletePartitionError, DiskCommitError
+
+        *       DeletePartitionError, DiskCommitError
 
         .. note::
 
@@ -285,17 +323,17 @@ class Disk(object):
             will raise DiskError.
         """
         if part and isinstance(part, Partition):
-            partition = part._Partition__partition
+            partition = part._partition
         elif type(part) is int:
             partition = self._get_ped_partition(part)
         else:
             raise DeletePartitionError(705)
         if partition_is_busy(partition):
             raise DeletePartitionError(706)
-        disk_delete_partition(self.__disk, partition)
+        disk_delete_partition(self._ped_disk, partition)
         self.commit()
-        disk_destroy(self.__disk)
-        self.__disk = disk_new(self.__device)
+        disk_destroy(self._ped_disk)
+        self._disk = disk_new(self._ped_device)
 
     @diskDecorator()
     def delete_all(self):
@@ -303,14 +341,15 @@ class Disk(object):
         This method deletes all partitions from disk.
 
         *Raises:*
-            DiskError, DiskCommitError
+
+        *       DiskError, DiskCommitError
 
         .. note::
 
             If the disk is initialized (no partition table) it
             will return None.
         """
-        disk_delete_all(self.__disk)
+        disk_delete_all(self._ped_disk)
         return
 
     @diskDecorator(error=True)
@@ -319,22 +358,23 @@ class Disk(object):
         This method commits partition modifications to disk.
 
         *Raises:*
-            DiskError, DiskCommitError
+
+        *       DiskError, DiskCommitError
 
         .. note::
 
             If the disk is initialized (no partition table) it
             will return None.
         """
-        to_dev = disk_commit_to_dev(self.__disk)
+        to_dev = disk_commit_to_dev(self._ped_disk)
         if not to_dev:
             raise DiskCommitError(601)
-        to_os = disk_commit_to_os(self.__disk)
+        to_os = disk_commit_to_os(self._ped_disk)
         if not to_os:
             raise DiskCommitError(602)
 
     def _get_ped_partition(self, part_num):
-        partition = disk_get_partition(self.__disk, part_num)
+        partition = disk_get_partition(self._ped_disk, part_num)
         if not bool(partition):
             raise PartitionError(705)
         return partition
@@ -345,26 +385,28 @@ class Disk(object):
         Returns a Partition instance.
 
         *Args:*
-            part_num (int):     A partition number.
+
+        *       part_num (int):     A partition number.
 
         *Raises:*
-            PartitionError
+
+        *       PartitionError
 
         .. note::
 
             If the disk is initialized (no partition table) it
             will raise DiskError.
         """
-        partition = Partition(part=self._get_ped_partition(part_num))
+        partition = Partition(disk=self, part=self._get_ped_partition(part_num))
         return partition
 
     def _destroy_disk(self, disk=None):
         if disk:
             disk_destroy(disk)
         else:
-            if self.__disk:
+            if self._ped_disk:
                 disk_destroy(self._ped_disk)
-                self.__disk = None
+                self._disk = None
             else:
                 raise DiskError(600)
 
@@ -374,10 +416,12 @@ class Disk(object):
         This method calls commit to set the label changes.
 
         *Args:*
-            label (str):    A partition table type ('gpt' or 'msdos')
+
+        *       label (str):    A partition table type ('gpt' or 'msdos')
 
         *Raises:*
-            DiskError
+
+        *       DiskError
         """
         if label not in disk_labels:
             raise DiskError(603)
@@ -389,233 +433,7 @@ class Disk(object):
         new_disk = disk_new_fresh(self._ped_device, disk_type)
         if not bool(new_disk):
             raise DiskError(605)
-        self.__disk = new_disk
+        self._disk = new_disk
         self.commit()
         self._destroy_disk(disk=new_disk)
-        self.__disk = disk_new(self.__device)
-
-class Partition(object):
-    """
-    *Partition class is used as a wrapper to libparted's ped_partition.*
-
-    You need can create Partition instances and add them to disk. A new
-    Partition instance can be initialized::
-
-        from reparted import *
-
-        myDevice = Device("/dev/sda")
-        myDisk = Disk(myDevice)
-        mySize = Size(4, "GB")
-
-        # Defaults
-        myPartition = Partition(myDisk, mySize)
-
-        # Different filesystem and minimal alignment.
-        myPartition = Partition(myDisk, mySize, fs="ext4", align="minimal")
-
-        # Initialize with a name
-        if myDisk.type_features == 'PARTITION_NAME':
-            myPartition = Partition(myDisk, mySize, name="test")
-
-    *Args:*
-        disk:           A Disk class instance.
-        size:           A Size class instance.
-        type (str):     The partition type (ie. 'NORMAL', 'LOGICAL', etc...).
-        fs (str):       The filesystem type (ie. 'ext3', 'ext4', etc...).
-        align (str):    The partition alignment, 'minimal' or 'optimal'.
-        name (str):     The partition name.
-        start (int):    The start sector for the partition.
-        end (int):      The end sector for the partition.
-        part:           A ctypes ped_partition pointer.
-
-    *Raises:*
-        PartitionError
-
-    .. note::
-
-       Name is only available when partition type is 'NORMAL'.
-       The start and end arguments are optional and you should only use them when
-       your want to specify such attributes, otherwise use optimal alignment.
-       The part argument is optional and mostly for internal use.
-    """
-    def __init__(self, disk=None, size=None, type='NORMAL', fs='ext3', align='optimal',
-                    name='', start=None, end=None, part=None):
-        if part:
-            self.__align = None
-            self.__partition = part
-            self.__ped_disk = self.__partition.contents.disk
-            self.__disk = Disk(disk=self.__ped_disk)
-        elif disk and size:
-            self.__align = align
-            if not type in partition_type.values():
-                raise PartitionError(707)
-            part_type = [key for key,val in partition_type.iteritems() if val == type][0]
-            if type != 'EXTENDED' and fs != None:
-                filesystem = file_system_type_get(fs)
-            self.__ped_disk = disk._ped_disk
-            self.__disk = Disk(disk=self.__ped_disk)
-            if align == 'optimal' or align == 'minimal':
-                dev = disk._ped_device
-                a_start, a_end = self._get_alignment(dev, align, start, end, size)
-            else:
-                raise PartitionError(708)
-            self.__partition = partition_new(self.__ped_disk, part_type, filesystem, a_start, a_end)
-            if name:
-                self.set_name(name)
-        else:
-            raise PartitionError(700)
-
-    @property
-    def disk(self):
-        """
-        Returns the ctypes ped_disk pointer.
-        """
-        return self.__disk
-
-    @property
-    def device(self):
-        """
-        Returns the Device instance this partition belongs to.
-        """
-        return self.disk.device
-
-    @property
-    def geom(self):
-        """
-        Returns the partition geometry as a 3-tuple:
-
-            (start, end, length)
-        """
-        start =  self.__partition.contents.geom.start
-        end =  self.__partition.contents.geom.end
-        length =  self.__partition.contents.geom.length
-        return (start, end, length)
-
-    @property
-    def num(self):
-        """
-        Returns the partition number.
-        """
-        return self.__partition.contents.num
-
-    @property
-    def type(self):
-        """
-        Returns the partition type.
-        """
-        return partition_type[self.__partition.contents.type]
-
-    @property
-    def fs_type(self):
-        """
-        Returns the partition filesystem type.
-        """
-        try:
-            fs = self.__partition.contents.fs_type.contents.name
-        except ValueError:
-            fs = None
-        return fs
-
-    @property
-    def name(self):
-        """
-        Returns the partition name if names are supported by disk type,
-        otherwise returns None.
-        """
-        if self.disk.type_features != 'PARTITION_NAME':
-            return None
-        return partition_get_name(self.__partition)
-
-    @property
-    def alignment(self):
-        """
-        Returns the partition alignment ('optimal' or 'minimal').
-
-        .. note::
-
-            If you specify a 'minimal' alignment when creating a partition
-            but the start sector falls in what would be considered an
-            optimal alignment this method will return 'optimal'.
-        """
-        if self.__align:
-            return self.__align
-        else:
-            optimal = device_get_optimum_alignment(self.disk._ped_device)
-            minimal = device_get_minimum_alignment(self.disk._ped_device)
-            start, e, l = self.geom
-            if start % optimal.contents.grain_size == optimal.contents.offset:
-                return 'optimal'
-            if start % minimal.contents.grain_size == minimal.contents.offset:
-                return 'minimal'
-        return None
-
-    def set_name(self, name):
-        """
-        Sets the partition name. If the disk type does not support
-        partition names it will raise NotImplementedError.
-
-        *Args:*
-            name (str):         The partition name.
-
-        *Raise:*
-            NotImplementedError, PartitionError
-        """
-        if self.disk.type_features != 'PARTITION_NAME':
-            raise NotImplementedError("The disk does not support partition names.")
-        new_name = partition_set_name(self.__partition, name)
-        if not new_name:
-            raise PartitionError(704)
-        return
-
-    def _snap_sectors(self, start, end, size):
-        if start:
-            if not end:
-                end = start + size.sectors - 1
-            if (end - start) != (size.sectors - 1):
-                raise PartitionError(709)
-        else:
-            last_part_num = disk_get_last_partition_num(self.disk._ped_disk)
-            last_part = disk_get_partition(self.disk._ped_disk, last_part_num)
-            last_end_sector = last_part.contents.geom.end
-            start = last_end_sector + 1
-            end = start + size.sectors - 1
-        return (start, end)
-
-    def _get_alignment(self, dev, align, start, end, size):
-        const = getattr(parted, "ped_device_get_%s_aligned_constraint" % align)
-        constraint = const(dev)
-        start_offset = constraint.contents.start_align.contents.offset
-        start_grain = constraint.contents.start_align.contents.grain_size
-        end_offset = constraint.contents.end_align.contents.offset
-        end_grain = constraint.contents.end_align.contents.grain_size
-        snap_start, snap_end = self._snap_sectors(start, end, size)
-        if snap_start % start_grain == start_offset:
-            start = snap_start
-        else:
-            start = ((snap_start / start_grain) + 1) * start_grain
-        end = start + size.sectors
-        if (end - end_offset) % end_grain != end_offset:
-            end = ((end / end_grain) * end_grain) + end_offset
-        return (start, end)
-
-    def _get_percent_size(self, length):
-        device_length = self.device.length
-        return
-
-    def _check_flag(self, flag):
-        if not flag in partition_flag.keys():
-            raise PartitionError(710)
-        check = partition_is_flag_available(self.__partition, partition_flag[flag])
-        if not check:
-            raise PartitionError(710)
-
-    def set_flag(self, flag, state):
-        """
-        Sets the partition flag (ie. 'BOOT', 'ROOT', etc...).
-
-        *Args:*
-            flag (str):         The partition flag.
-            state (bool):       Toggle the flag state (True or False).
-        """
-        self._check_flag(flag)
-        partition_set_flag(self.__partition, partition_flag[flag], int(state))
+        self._disk = disk_new(self._ped_device)

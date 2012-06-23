@@ -39,16 +39,40 @@ You can add partitions, but first you need to set the size::
 
     # get the sector size from the device
     myDevice = Device('/dev/sda')
-    mySize = Size(4, "GB", myDevice)
+    mySize = Size(4, "GB", dev=myDevice)
 
     # You can even set a percentage!
     myDevice = Device('/dev/sda')
-    mySize = Size(25, "%", myDevice)
+    mySize = Size(25, "%", dev=myDevice)
 
 Now that you have your size, you can initialize a new partition and add it to disk::
 
     myPartition = Partition(myDisk, mySize)
     myDisk.add_partition(myPartition)
+    myDisk.commit()
+
+.. note::
+    Unless you specify a starting sector for a new partition, reparted will always search
+    for the largest free space available and set the beginning of that area as the starting
+    sector for new partitions.
+
+Want to fill a new partition with whatever is free on disk? No hay problema::
+
+    freeSize = myDisk.usable_free_space
+    myPartition = Partition(myDisk, freeSize)
+    myDisk.add_partition(myPartition)
+    myDisk.commit()
+
+Now what about ms-dos disks and extended partitions?::
+
+    myDisk.set_label('msdos')
+    myDisk.commit()
+    freeSize = myDisk.usable_free_space
+    myPartition = Partition(myDisk, freeSize, type="EXTENDED")
+    myDisk.add_partition(myPartition)
+    myDisk.commit()
+    logical = Partition(myDisk, Size(8, "GB"), type="LOGICAL")
+    myDisk.add_partition(logical)
     myDisk.commit()
 
 You can also delete partitions::

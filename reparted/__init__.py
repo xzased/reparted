@@ -15,4 +15,5 @@
 
 from .size import Size
 from .device import Device
-from .disk import Disk, Partition
+from .disk import Disk
+from .partition import Partition
