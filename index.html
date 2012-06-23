@@ -529,6 +529,144 @@ lvm and &#8216;PARTITION_NAME&#8217; for label support).</p>
 Disk points to a initialized disk.</p>
 </dd></dl>
 
+<span class="target" id="module-partition"></span><dl class="class">
+<dt id="partition.Partition">
+<em class="property">class </em><tt class="descclassname">partition.</tt><tt class="descname">Partition</tt><big>(</big><em>disk</em>, <em>size=None</em>, <em>type='NORMAL'</em>, <em>fs='ext3'</em>, <em>align='optimal'</em>, <em>name=''</em>, <em>start=None</em>, <em>end=None</em>, <em>part=None</em><big>)</big><a class="headerlink" href="#partition.Partition" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Partition class is used as a wrapper to libparted&#8217;s ped_partition.</em></p>
+<p>You need can create Partition instances and add them to disk. A new
+Partition instance can be initialized:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">reparted</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">myDevice</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s">&quot;/dev/sda&quot;</span><span class="p">)</span>
+<span class="n">myDisk</span> <span class="o">=</span> <span class="n">Disk</span><span class="p">(</span><span class="n">myDevice</span><span class="p">)</span>
+<span class="n">mySize</span> <span class="o">=</span> <span class="n">Size</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;GB&quot;</span><span class="p">)</span>
+
+<span class="c"># Defaults</span>
+<span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">mySize</span><span class="p">)</span>
+
+<span class="c"># Different filesystem and minimal alignment.</span>
+<span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">mySize</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="s">&quot;ext4&quot;</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s">&quot;minimal&quot;</span><span class="p">)</span>
+
+<span class="c"># Initialize with a name</span>
+<span class="k">if</span> <span class="n">myDisk</span><span class="o">.</span><span class="n">type_features</span> <span class="o">==</span> <span class="s">&#39;PARTITION_NAME&#39;</span><span class="p">:</span>
+    <span class="n">myPartition</span> <span class="o">=</span> <span class="n">Partition</span><span class="p">(</span><span class="n">myDisk</span><span class="p">,</span> <span class="n">mySize</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;test&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>disk:           A Disk class instance.</li>
+<li>size:           A Size class instance.</li>
+<li>type (str):     The partition type (ie. &#8216;NORMAL&#8217;, &#8216;LOGICAL&#8217;, etc...).</li>
+<li>fs (str):       The filesystem type (ie. &#8216;ext3&#8217;, &#8216;ext4&#8217;, etc...).</li>
+<li>align (str):    The partition alignment, &#8216;minimal&#8217; or &#8216;optimal&#8217;.</li>
+<li>name (str):     The partition name.</li>
+<li>start (int):    The start sector for the partition.</li>
+<li>end (int):      The end sector for the partition.</li>
+<li>part:           A ctypes ped_partition pointer.</li>
+</ul>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>PartitionError</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Name is only available when partition type is &#8216;NORMAL&#8217;.
+The start and end arguments are optional and you should only use them when
+your want to specify such attributes, otherwise use optimal alignment.
+The part argument is optional and mostly for internal use.</p>
+</div>
+<dl class="attribute">
+<dt id="partition.Partition.alignment">
+<tt class="descname">alignment</tt><a class="headerlink" href="#partition.Partition.alignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition alignment (&#8216;optimal&#8217; or &#8216;minimal&#8217;).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you specify a &#8216;minimal&#8217; alignment when creating a partition
+but the start sector falls in what would be considered an
+optimal alignment this method will return &#8216;optimal&#8217;.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="partition.Partition.device">
+<tt class="descname">device</tt><a class="headerlink" href="#partition.Partition.device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the Device instance this partition belongs to.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="partition.Partition.disk">
+<tt class="descname">disk</tt><a class="headerlink" href="#partition.Partition.disk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the Disk instance this partition belongs to.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="partition.Partition.fs_type">
+<tt class="descname">fs_type</tt><a class="headerlink" href="#partition.Partition.fs_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition filesystem type.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="partition.Partition.geom">
+<tt class="descname">geom</tt><a class="headerlink" href="#partition.Partition.geom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition geometry as a 3-tuple:</p>
+<blockquote>
+<div>(start, end, length)</div></blockquote>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="partition.Partition.name">
+<tt class="descname">name</tt><a class="headerlink" href="#partition.Partition.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition name if names are supported by disk type,
+otherwise returns None.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="partition.Partition.num">
+<tt class="descname">num</tt><a class="headerlink" href="#partition.Partition.num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition number. If the partition is of type &#8216;FREESPACE&#8217;
+it will return -1.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="partition.Partition.set_flag">
+<tt class="descname">set_flag</tt><big>(</big><em>flag</em>, <em>state</em><big>)</big><a class="headerlink" href="#partition.Partition.set_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the partition flag (ie. &#8216;BOOT&#8217;, &#8216;ROOT&#8217;, etc...).</p>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>flag (str):         The partition flag.</li>
+<li>state (bool):       Toggle the flag state (True or False).</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="partition.Partition.set_name">
+<tt class="descname">set_name</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#partition.Partition.set_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the partition name. If the disk type does not support
+partition names it will raise NotImplementedError.</p>
+<p><em>Args:</em></p>
+<ul class="simple">
+<li>name (str):         The partition name.</li>
+</ul>
+<p><em>Raises:</em></p>
+<ul class="simple">
+<li>NotImplementedError, PartitionError</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="partition.Partition.size">
+<tt class="descname">size</tt><a class="headerlink" href="#partition.Partition.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the size as a Size class instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="partition.Partition.type">
+<tt class="descname">type</tt><a class="headerlink" href="#partition.Partition.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the partition type.</p>
+</dd></dl>
+
+</dd></dl>
+
 <span class="target" id="module-exception"></span><dl class="exception">
 <dt id="exception.AddPartitionError">
 <em class="property">exception </em><tt class="descclassname">exception.</tt><tt class="descname">AddPartitionError</tt><big>(</big><em>code</em><big>)</big><a class="headerlink" href="#exception.AddPartitionError" title="Permalink to this definition">¶</a></dt>

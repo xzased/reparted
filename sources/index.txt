@@ -29,5 +29,8 @@ Indices and tables
 .. automodule:: disk
    :members:
 
+.. automodule:: partition
+   :members:
+
 .. automodule:: exception
    :members:
