@@ -141,7 +141,7 @@ PedPartition._fields_ = [
     ('disk', POINTER(PedDisk)),
     ('geom', PedGeometry),
     ('num', c_int),
-    ('type', c_long),
+    ('type', c_int),
     ('fs_type', POINTER(PedFileSystemType)),
     ('part_list', POINTER(PedPartition)),
     ('disk_specific', c_void_p),
